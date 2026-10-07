@@ -1,16 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { AIMediaType, GeminiProvider } from '@/core/ai';
+import { AIMediaType } from '@/core/ai';
 import { getAuth } from '@/core/auth';
 import {
   DEFAULT_ASPECT_RATIO,
   DEFAULT_IMAGE_MODEL,
   DEFAULT_RESOLUTION,
+  imageCost,
   isAspectRatio,
   isImageResolution,
   MAX_PROMPT_LENGTH,
   MAX_REFERENCE_IMAGES,
   resolveImageCredits,
+  resolveReferenceCredits,
   type AspectRatio,
   type ImageResolution,
 } from '@/config/image-gen';
@@ -18,17 +20,18 @@ import {
   AITaskStatus,
   createTask,
   mergeTaskInfo,
+  setProviderTaskId,
   updateTask,
 } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
 import { screenPrompt } from '@/modules/content-safety/service';
 import { getBalance } from '@/modules/credits/service';
 import { hasPermission } from '@/modules/rbac/service';
-import { getUuid } from '@/lib/hash';
 import { enforceMinIntervalRateLimit } from '@/lib/rate-limit';
 import { respData, respErr } from '@/lib/resp';
 
-import { resolveReferenceUrls, uploadGeneratedImage } from './-shared';
+import { resolveReferenceUrls } from './-shared';
+import { evolinkFromConfigs, taskView } from './-task';
 
 const INSUFFICIENT_CREDITS = 'Insufficient credits';
 const PROMPT_BLOCKED = 'PROMPT_BLOCKED';
@@ -62,27 +65,38 @@ async function POST({ request }: { request: Request }) {
     if (references.length > MAX_REFERENCE_IMAGES) {
       return respErr(`Up to ${MAX_REFERENCE_IMAGES} reference images`);
     }
+    // Evolink downloads references itself: they must be public storage URLs
+    // (the local no-storage fallback inlines data: URLs it can't use).
+    if (references.some((url) => !url.startsWith('https://'))) {
+      return respErr('STORAGE_REQUIRED');
+    }
 
     if (!(await screenPrompt(prompt, configs)).allowed) {
       return respErr(PROMPT_BLOCKED);
     }
 
+    const client = evolinkFromConfigs(configs);
+    if (!client) return respErr('Generation is not configured');
+
     // Admins generate free; checked first so an unpaid user always lands on
-    // the paywall.
+    // the paywall. Price = 7x Evolink cost (see config/image-gen.ts).
     const isAdmin = await hasPermission(session.user.id, 'admin.*');
-    const price = resolveImageCredits(configs)[resolution];
+    const price = imageCost(
+      resolveImageCredits(configs),
+      resolveReferenceCredits(configs),
+      resolution,
+      references.length
+    );
     if (!isAdmin && (await getBalance(session.user.id)) < price) {
       return respErr(INSUFFICIENT_CREDITS);
     }
 
-    const apiKey = configs.gemini_api_key;
-    if (!apiKey) return respErr('Generation is not configured');
     const model = configs.nano_banana_model || DEFAULT_IMAGE_MODEL;
-
+    // Consumes the credits atomically; refunded if the task fails.
     const task = await createTask({
       userId: session.user.id,
       mediaType: AIMediaType.IMAGE,
-      provider: 'gemini',
+      provider: 'evolink',
       model,
       prompt,
       costCredits: isAdmin ? 0 : price,
@@ -94,43 +108,16 @@ async function POST({ request }: { request: Request }) {
     });
 
     try {
-      const provider = new GeminiProvider({
-        apiKey,
-        uploadFile: uploadGeneratedImage,
-        uuid: getUuid,
-      });
-      const result = await provider.generate({
-        params: {
-          mediaType: AIMediaType.IMAGE,
-          model,
-          prompt,
-          options: {
-            image_input: references,
-            image_config: {
-              aspect_ratio: aspectRatio,
-              image_size: resolution,
-            },
-          },
-        },
-      });
-      const imageUrl = result.taskInfo?.images?.[0]?.imageUrl;
-      if (!imageUrl) throw new Error('no image returned');
-
-      await updateTask({
-        taskId: task.id,
-        status: AITaskStatus.SUCCESS,
-        taskResult: { imageUrl },
-      });
-      return respData({
-        id: task.id,
-        imageUrl,
+      const remote = await client.submitImage({
+        model,
         prompt,
-        aspectRatio,
-        resolution,
-        credits: isAdmin ? 0 : price,
+        size: aspectRatio,
+        quality: resolution,
+        imageUrls: references,
       });
+      await setProviderTaskId(task.id, remote.id);
     } catch (error: any) {
-      console.error('[image] generation failed:', error?.message);
+      console.error('[image] evolink submit failed:', error?.message);
       await updateTask({
         taskId: task.id,
         status: AITaskStatus.FAILED,
@@ -138,6 +125,15 @@ async function POST({ request }: { request: Request }) {
       });
       return respErr('GENERATION_FAILED');
     }
+
+    // The client polls /api/image/task?id=... until it finishes.
+    return respData(
+      taskView({
+        ...task,
+        taskInfo: JSON.stringify({ aspectRatio, resolution }),
+        costCredits: isAdmin ? 0 : price,
+      })
+    );
   } catch (error: any) {
     if (error?.message === INSUFFICIENT_CREDITS) {
       return respErr(INSUFFICIENT_CREDITS);

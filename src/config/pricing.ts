@@ -30,100 +30,63 @@ export type PricingProduct = {
 };
 
 /**
- * nanobanana 2.1 catalog. One image costs 10 / 15 / 25 credits at 1K / 2K / 4K
- * (see ./image-gen.ts; admin can override). Credits are priced at roughly
- * $0.01 each, with bigger packs and subscriptions slightly cheaper.
+ * nanobanana 2.1 catalog: two groups (one-time packs, monthly plans), three
+ * tiers each. An image costs 7x its Evolink price at $0.01 per credit (25 /
+ * 35 / 75 credits for 1K / 2K / 4K, +2 per reference image; see
+ * ./image-gen.ts), so every product here sells credits at >= $0.01 each:
+ * that floor is what keeps the 7x margin true on discounted tiers. Check
+ * priceInCents / credits >= 1 before adding or changing a product.
  *
- * Prices and product IDs are unchanged from the previous catalog so existing
- * payment-provider product mappings keep working — only credits changed.
- * Keys MUST match what the pricing UI sends as product_id.
+ * Product IDs are kept from the previous catalog so payment-provider product
+ * mappings still resolve (providers with fixed-price products need their
+ * prices updated to match). Keys MUST match what the pricing UI sends.
  */
+function pack(
+  productId: string,
+  name: string,
+  priceInCents: number,
+  credits: number
+): PricingProduct {
+  return {
+    productId,
+    productName: name,
+    planName: name,
+    description: name,
+    type: PaymentType.ONE_TIME,
+    priceInCents,
+    currency: 'usd',
+    credits,
+  };
+}
+
+function monthly(
+  productId: string,
+  name: string,
+  priceInCents: number,
+  credits: number
+): PricingProduct {
+  return {
+    productId,
+    productName: name,
+    planName: `${name} Monthly`,
+    description: `${name} Monthly`,
+    type: PaymentType.SUBSCRIPTION,
+    priceInCents,
+    currency: 'usd',
+    credits,
+    plan: { name, interval: PaymentInterval.MONTH, intervalCount: 1 },
+  };
+}
+
 export const pricingCatalog: Record<string, PricingProduct> = {
-  pack_single: {
-    productId: 'pack_single',
-    productName: 'Mini Pack',
-    planName: 'Mini Pack',
-    description: 'Mini Pack',
-    type: PaymentType.ONE_TIME,
-    priceInCents: 490,
-    currency: 'usd',
-    credits: 500,
-  },
-  pack_starter: {
-    productId: 'pack_starter',
-    productName: 'Starter Pack',
-    planName: 'Starter Pack',
-    description: 'Starter Pack',
-    type: PaymentType.ONE_TIME,
-    priceInCents: 990,
-    currency: 'usd',
-    credits: 1100,
-  },
-  pack_standard: {
-    productId: 'pack_standard',
-    productName: 'Standard Pack',
-    planName: 'Standard Pack',
-    description: 'Standard Pack',
-    type: PaymentType.ONE_TIME,
-    priceInCents: 2300,
-    currency: 'usd',
-    credits: 2600,
-  },
-  pack_pro: {
-    productId: 'pack_pro',
-    productName: 'Pro Pack',
-    planName: 'Pro Pack',
-    description: 'Pro Pack',
-    type: PaymentType.ONE_TIME,
-    priceInCents: 4400,
-    currency: 'usd',
-    credits: 5200,
-  },
-  basic_monthly: {
-    productId: 'basic_monthly',
-    productName: 'Basic',
-    planName: 'Basic Monthly',
-    description: 'Basic Monthly',
-    type: PaymentType.SUBSCRIPTION,
-    priceInCents: 2300,
-    currency: 'usd',
-    credits: 2800,
-    plan: {
-      name: 'Basic',
-      interval: PaymentInterval.MONTH,
-      intervalCount: 1,
-    },
-  },
-  pro_monthly: {
-    productId: 'pro_monthly',
-    productName: 'Pro',
-    planName: 'Pro Monthly',
-    description: 'Pro Monthly',
-    type: PaymentType.SUBSCRIPTION,
-    priceInCents: 4400,
-    currency: 'usd',
-    credits: 6000,
-    plan: {
-      name: 'Pro',
-      interval: PaymentInterval.MONTH,
-      intervalCount: 1,
-    },
-  },
-  studio_monthly: {
-    productId: 'studio_monthly',
-    productName: 'Studio',
-    planName: 'Studio Monthly',
-    description: 'Studio Monthly',
-    type: PaymentType.SUBSCRIPTION,
-    priceInCents: 8800,
-    currency: 'usd',
-    credits: 13000,
-    plan: {
-      name: 'Studio',
-      interval: PaymentInterval.MONTH,
-      intervalCount: 1,
-    },
-  },
+  // One-time packs: credits never expire. $0.0124 / $0.0115 / $0.0100.
+  pack_starter: pack('pack_starter', 'Starter Pack', 990, 800),
+  pack_standard: pack('pack_standard', 'Standard Pack', 2990, 2600),
+  pack_pro: pack('pack_pro', 'Pro Pack', 6990, 6990),
+  // Monthly plans: refill every month, best value. $0.0110 / $0.0104 / $0.0100.
+  basic_monthly: monthly('basic_monthly', 'Basic', 990, 900),
+  pro_monthly: monthly('pro_monthly', 'Pro', 2490, 2400),
+  studio_monthly: monthly('studio_monthly', 'Studio', 5990, 5990),
 };
 
 export function getPricingProduct(productId: string): PricingProduct | null {

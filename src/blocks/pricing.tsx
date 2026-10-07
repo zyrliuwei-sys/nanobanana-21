@@ -17,6 +17,7 @@ import { useSession } from '@/core/auth/client';
 import { useRouter } from '@/core/i18n/navigation';
 import {
   DEFAULT_IMAGE_CREDITS,
+  DEFAULT_REFERENCE_CREDITS,
   type ImageResolution,
 } from '@/config/image-gen';
 import { pricingCatalog } from '@/config/pricing';
@@ -39,10 +40,11 @@ const PaymentProviderModal = lazy(() =>
   }))
 );
 
-// $9.9 rather than $9.90; whole dollars stay $23.
 function usd(cents: number) {
+  // $9.90 / $29.90, whole dollars stay $23.
+  const whole = cents % 100 === 0;
   return `$${(cents / 100).toLocaleString('en-US', {
-    minimumFractionDigits: 0,
+    minimumFractionDigits: whole ? 0 : 2,
     maximumFractionDigits: 2,
   })}`;
 }
@@ -89,10 +91,16 @@ export function Pricing({
   const { data: priceData } = useQuery({
     queryKey: ['image-price'],
     queryFn: () =>
-      apiGet<{ credits: Record<ImageResolution, number> }>('/api/image/price'),
+      apiGet<{
+        credits: Record<ImageResolution, number>;
+        referenceCredits: number;
+      }>('/api/image/price'),
     staleTime: 10 * 60_000,
   });
   const perImage = priceData?.credits ?? DEFAULT_IMAGE_CREDITS;
+  const perReference = priceData?.referenceCredits ?? DEFAULT_REFERENCE_CREDITS;
+  const count = (credits: number, res: ImageResolution) =>
+    Math.floor(credits / perImage[res]).toLocaleString('en-US');
 
   function features(credits: number, extra: PricingFeature[]) {
     return [
@@ -105,8 +113,9 @@ export function Pricing({
       {
         icon: ImageIcon,
         label: m['landing.pricing.feature_images']({
-          count: Math.floor(credits / perImage['1K']).toLocaleString('en-US'),
-          count4k: Math.floor(credits / perImage['4K']).toLocaleString('en-US'),
+          count: count(credits, '1K'),
+          count2k: count(credits, '2K'),
+          count4k: count(credits, '4K'),
         }),
       },
       { icon: MonitorPlay, label: m['landing.pricing.feature_hd']() },
@@ -172,56 +181,53 @@ export function Pricing({
     },
     { icon: XCircle, label: m['landing.pricing.feature_cancel']() },
   ];
-  const tiers = [
-    ['basic', m['landing.pricing.basic'](), m['landing.pricing.basic_desc']()],
-    ['pro', m['landing.pricing.pro'](), m['landing.pricing.pro_desc']()],
-    [
-      'studio',
-      m['landing.pricing.studio'](),
-      m['landing.pricing.studio_desc'](),
-    ],
-  ] as const;
-
   const groups: PricingGroup[] = [
     // One-time is the tab shown by default (see defaultGroup below).
-    {
-      key: 'monthly',
-      label: m['landing.pricing.monthly'](),
-      plans: tiers.map(([tier, name, description]) =>
-        plan(`${tier}_monthly`, {
-          name,
-          description,
-          featured: tier === 'pro',
-          badge: tier === 'pro' ? m['landing.pricing.popular']() : undefined,
-          extra: monthlyExtra,
-        })
-      ),
-    },
     {
       key: 'one-time',
       label: m['landing.pricing.one_time'](),
       plans: [
-        plan('pack_single', {
-          name: m['landing.pricing.pack_single'](),
-          description: m['landing.pricing.pack_single_desc'](),
-          extra: packExtra,
-        }),
         plan('pack_starter', {
           name: m['landing.pricing.pack_starter'](),
-          description: m['landing.pricing.pack_desc'](),
-          featured: true,
-          badge: m['landing.pricing.popular'](),
+          description: m['landing.pricing.pack_starter_desc'](),
           extra: packExtra,
         }),
         plan('pack_standard', {
           name: m['landing.pricing.pack_standard'](),
-          description: m['landing.pricing.pack_desc'](),
+          description: m['landing.pricing.pack_standard_desc'](),
+          featured: true,
+          badge: m['landing.pricing.popular'](),
           extra: packExtra,
         }),
         plan('pack_pro', {
           name: m['landing.pricing.pack_pro'](),
-          description: m['landing.pricing.pack_desc'](),
+          description: m['landing.pricing.pack_pro_desc'](),
+          badge: m['landing.pricing.best_value'](),
           extra: packExtra,
+        }),
+      ],
+    },
+    {
+      key: 'monthly',
+      label: m['landing.pricing.monthly'](),
+      plans: [
+        plan('basic_monthly', {
+          name: m['landing.pricing.basic'](),
+          description: m['landing.pricing.basic_desc'](),
+          extra: monthlyExtra,
+        }),
+        plan('pro_monthly', {
+          name: m['landing.pricing.pro'](),
+          description: m['landing.pricing.pro_desc'](),
+          featured: true,
+          badge: m['landing.pricing.popular'](),
+          extra: monthlyExtra,
+        }),
+        plan('studio_monthly', {
+          name: m['landing.pricing.studio'](),
+          description: m['landing.pricing.studio_desc'](),
+          badge: m['landing.pricing.best_value'](),
+          extra: monthlyExtra,
         }),
       ],
     },
@@ -341,6 +347,7 @@ export function Pricing({
               k1: perImage['1K'],
               k2: perImage['2K'],
               k4: perImage['4K'],
+              ref: perReference,
             })}
           </p>
         </div>

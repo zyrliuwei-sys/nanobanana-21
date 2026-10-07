@@ -188,7 +188,7 @@ export function getSettingGroups(): SettingGroup[] {
       name: 'nano_banana',
       title: 'Nano Banana 2.1',
       description:
-        'Image generation & editing via the Gemini API (gemini-nano-banana-2.1)',
+        'Image generation & editing via Evolink (gemini-nano-banana-2.1). Uses the Evolink API key above. Credits default to 7x the Evolink price.',
       tab: 'ai',
     },
 
@@ -921,15 +921,6 @@ export function getSettings(): Setting[] {
 
     // ─── AI / Nano Banana 2.1 ───────────────────────────────────────
     {
-      name: 'gemini_api_key',
-      title: 'Gemini API Key',
-      type: 'password',
-      placeholder: 'AIza...',
-      tip: 'Google AI Studio key used for every image generation.',
-      group: 'nano_banana',
-      tab: 'ai',
-    },
-    {
       name: 'nano_banana_model',
       title: 'Model ID',
       type: 'text',
@@ -941,7 +932,7 @@ export function getSettings(): Setting[] {
       name: 'image_credits_1k',
       title: 'Credits per 1K image',
       type: 'number',
-      placeholder: '10 (default)',
+      placeholder: '25 (default: 7x $0.031 Evolink 1K price)',
       group: 'nano_banana',
       tab: 'ai',
     },
@@ -949,7 +940,7 @@ export function getSettings(): Setting[] {
       name: 'image_credits_2k',
       title: 'Credits per 2K image',
       type: 'number',
-      placeholder: '15 (default)',
+      placeholder: '35 (default: 7x $0.046 Evolink 2K price)',
       group: 'nano_banana',
       tab: 'ai',
     },
@@ -957,7 +948,15 @@ export function getSettings(): Setting[] {
       name: 'image_credits_4k',
       title: 'Credits per 4K image',
       type: 'number',
-      placeholder: '25 (default)',
+      placeholder: '75 (default: 7x $0.103 Evolink 4K price)',
+      group: 'nano_banana',
+      tab: 'ai',
+    },
+    {
+      name: 'image_credits_ref',
+      title: 'Credits per reference image',
+      type: 'number',
+      placeholder: '2 (default: 7x $0.0016 Evolink reference price)',
       group: 'nano_banana',
       tab: 'ai',
     },

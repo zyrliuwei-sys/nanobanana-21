@@ -16,56 +16,56 @@ export type ShowcaseItem = {
 export const SHOWCASE: ShowcaseItem[] = [
   {
     key: 'portrait',
-    src: '/imgs/generated/showcase-portrait.jpg',
+    src: '/imgs/generated/showcase-portrait-4c3458fd.jpg',
     prompt:
       'Editorial portrait of a young woman with freckles in golden hour light, natural skin texture, shallow depth of field, shot on 85mm',
     aspectRatio: '4:5',
   },
   {
     key: 'product',
-    src: '/imgs/generated/showcase-product.jpg',
+    src: '/imgs/generated/showcase-product-8adb2434.jpg',
     prompt:
       'Luxury perfume bottle standing on wet black volcanic rocks, lime green rim light, water droplets, studio product photography',
     aspectRatio: '4:5',
   },
   {
     key: 'fashion',
-    src: '/imgs/generated/showcase-fashion.jpg',
+    src: '/imgs/generated/showcase-fashion-ae69d703.jpg',
     prompt:
       'High-fashion editorial of a model in a tailored ivory wool coat walking a rain-slicked Paris street at night, cinematic reflections',
     aspectRatio: '4:5',
   },
   {
     key: 'food',
-    src: '/imgs/generated/showcase-food.jpg',
+    src: '/imgs/generated/showcase-food-61a7cbc6.jpg',
     prompt:
       'Fine-dining plate of seared scallops with microgreens and beurre blanc on a matte black ceramic plate, moody Michelin restaurant lighting',
     aspectRatio: '4:5',
   },
   {
     key: 'anime',
-    src: '/imgs/generated/showcase-jewelry.jpg',
+    src: '/imgs/generated/showcase-jewelry-7a59fb69.jpg',
     prompt:
       'Close-up of a delicate gold necklace with an emerald pendant draped over white silk, soft window light, luxury jewelry photography',
     aspectRatio: '4:5',
   },
   {
     key: 'architecture',
-    src: '/imgs/generated/showcase-architecture.jpg',
+    src: '/imgs/generated/showcase-architecture-ae1b2ed2.jpg',
     prompt:
       'Minimalist luxury villa with an infinity pool overlooking the sea at blue hour, warm interior lights, architectural photography',
     aspectRatio: '4:5',
   },
   {
     key: 'landscape',
-    src: '/imgs/generated/showcase-landscape.jpg',
+    src: '/imgs/generated/showcase-landscape-d0e0df5b.jpg',
     prompt:
       'Aerial view of a turquoise lagoon and a white sand island, ultra-detailed 4K landscape photography',
     aspectRatio: '4:5',
   },
   {
     key: 'character',
-    src: '/imgs/generated/showcase-watch.jpg',
+    src: '/imgs/generated/showcase-watch-8dd4a0f5.jpg',
     prompt:
       'Close-up of a luxury steel chronograph wristwatch resting on dark walnut wood, soft directional light, macro detail of brushed steel, high-end advertising',
     aspectRatio: '4:5',
@@ -79,56 +79,56 @@ export const SHOWCASE: ShowcaseItem[] = [
 export const STUDIO_EXAMPLES: ShowcaseItem[] = [
   {
     key: 'coffee',
-    src: '/imgs/generated/example-coffee.jpg',
+    src: '/imgs/generated/example-coffee-3e60d05f.jpg',
     prompt:
       'Specialty pour-over coffee setup with a glass carafe on a walnut bar counter, soft morning light',
     aspectRatio: '4:5',
   },
   {
     key: 'sushi',
-    src: '/imgs/generated/example-sushi.jpg',
+    src: '/imgs/generated/example-sushi-edbbbb50.jpg',
     prompt:
       'Omakase sushi nigiri on a black slate counter, chef hands placing fresh tuna, intimate Tokyo restaurant',
     aspectRatio: '4:5',
   },
   {
     key: 'sneaker',
-    src: '/imgs/generated/example-sneaker.jpg',
+    src: '/imgs/generated/example-sneaker-4253a002.jpg',
     prompt:
       'Luxury white leather sneaker on polished concrete, soft studio light, clean minimal product shot',
     aspectRatio: '4:5',
   },
   {
     key: 'venice',
-    src: '/imgs/generated/example-venice.jpg',
+    src: '/imgs/generated/example-venice-45b193d8.jpg',
     prompt:
       'Venice Grand Canal at sunset seen from a gondola, golden light on historic palazzi, cinematic travel photography',
     aspectRatio: '4:5',
   },
   {
     key: 'car',
-    src: '/imgs/generated/example-car.jpg',
+    src: '/imgs/generated/example-car-adf30a8a.jpg',
     prompt:
       'Sleek silver sports car with no logos on a coastal mountain road at dusk, motion blur, automotive advertising',
     aspectRatio: '4:5',
   },
   {
     key: 'skincare',
-    src: '/imgs/generated/example-skincare.jpg',
+    src: '/imgs/generated/example-skincare-b1c29e80.jpg',
     prompt:
       'Minimal skincare serum bottles arranged on travertine blocks with soft shadows, clean beauty photography',
     aspectRatio: '4:5',
   },
   {
     key: 'mountain',
-    src: '/imgs/generated/example-mountain.jpg',
+    src: '/imgs/generated/example-mountain-3f28163f.jpg',
     prompt:
       'Hiker standing on a rocky ridge above a sea of clouds at sunrise, golden light on snowy peaks',
     aspectRatio: '4:5',
   },
   {
     key: 'peonies',
-    src: '/imgs/generated/example-peonies.jpg',
+    src: '/imgs/generated/example-peonies-c42cc178.jpg',
     prompt:
       'Bouquet of white peonies in a ceramic vase against a dark background, Dutch master style lighting, fine-art still life',
     aspectRatio: '4:5',
@@ -138,7 +138,7 @@ export const STUDIO_EXAMPLES: ShowcaseItem[] = [
 /** Placeholder shown in the generator's result panel before a first run. */
 export const STUDIO_SAMPLE: ShowcaseItem = {
   key: 'sample',
-  src: '/imgs/generated/studio-sample.jpg',
+  src: '/imgs/generated/studio-sample-7728be0b.jpg',
   prompt:
     'Fashion model in a sculptural white gown standing in desert dunes at golden hour, wind in the fabric',
   aspectRatio: '4:5',

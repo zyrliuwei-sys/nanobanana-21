@@ -5,9 +5,9 @@ import { webpSrcSet } from '@/lib/img';
 import { m } from '@/paraglide/messages.js';
 
 const CTA_PRINTS = [
-  '/imgs/generated/cta-1.jpg',
-  '/imgs/generated/cta-2.jpg',
-  '/imgs/generated/cta-3.jpg',
+  '/imgs/generated/cta-1-ebd5e62e.jpg',
+  '/imgs/generated/cta-2-c904889f.jpg',
+  '/imgs/generated/cta-3-4e800c0d.jpg',
 ];
 
 export function CTA() {

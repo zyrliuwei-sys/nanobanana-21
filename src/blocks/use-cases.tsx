@@ -30,10 +30,10 @@ const COPY: Record<string, Record<string, () => string>> = {
 const copy = (key: string, field = 'text') => COPY[key]?.[field]?.() ?? '';
 
 const CASES = [
-  { key: 'ecommerce', image: '/imgs/generated/usecase-ecommerce.jpg' },
-  { key: 'social', image: '/imgs/generated/usecase-social.jpg' },
-  { key: 'marketing', image: '/imgs/generated/usecase-marketing.jpg' },
-  { key: 'design', image: '/imgs/generated/usecase-design.jpg' },
+  { key: 'ecommerce', image: '/imgs/generated/usecase-ecommerce-3d1c8f64.jpg' },
+  { key: 'social', image: '/imgs/generated/usecase-social-f0803d05.jpg' },
+  { key: 'marketing', image: '/imgs/generated/usecase-marketing-2e038d13.jpg' },
+  { key: 'design', image: '/imgs/generated/usecase-design-47520d6e.jpg' },
 ] as const;
 
 export function UseCases() {

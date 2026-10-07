@@ -10,10 +10,10 @@ export const Route = createFileRoute('/(auth)')({
 
 // Form on the left, a contact sheet of example images on the right (lg+).
 const AUTH_PRINTS = [
-  '/imgs/generated/auth-1.jpg',
-  '/imgs/generated/auth-2.jpg',
-  '/imgs/generated/auth-3.jpg',
-  '/imgs/generated/auth-4.jpg',
+  '/imgs/generated/auth-1-3cc30445.jpg',
+  '/imgs/generated/auth-2-18966862.jpg',
+  '/imgs/generated/auth-3-c5536bfd.jpg',
+  '/imgs/generated/auth-4-a30ca943.jpg',
 ];
 
 function AuthLayout() {

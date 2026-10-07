@@ -1,13 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { resolveImageCredits } from '@/config/image-gen';
+import {
+  resolveImageCredits,
+  resolveReferenceCredits,
+} from '@/config/image-gen';
 import { getAllConfigs } from '@/modules/config/service';
 import { respData, respErr } from '@/lib/resp';
 
-// Public: credits one image costs at each resolution (generator + pricing).
+// Public: credits per image by resolution, plus per reference image.
 async function GET() {
   try {
-    return respData({ credits: resolveImageCredits(await getAllConfigs()) });
+    const configs = await getAllConfigs();
+    return respData({
+      credits: resolveImageCredits(configs),
+      referenceCredits: resolveReferenceCredits(configs),
+    });
   } catch (error: any) {
     console.error('[image] price failed:', error);
     return respErr('Internal error');

@@ -4,13 +4,16 @@ import { Studio } from '@/blocks/studio';
 
 // Three loose prints pinned beside the headline.
 const PRINTS = [
-  { src: '/imgs/generated/hero-1.jpg', className: 'top-6 left-0 -rotate-6' },
   {
-    src: '/imgs/generated/hero-2.jpg',
+    src: '/imgs/generated/hero-1-ec14dfed.jpg',
+    className: 'top-6 left-0 -rotate-6',
+  },
+  {
+    src: '/imgs/generated/hero-2-989b0f9b.jpg',
     className: 'top-0 left-[30%] rotate-2 z-10',
   },
   {
-    src: '/imgs/generated/hero-3.jpg',
+    src: '/imgs/generated/hero-3-fc481e39.jpg',
     className: 'top-10 right-0 rotate-[7deg]',
   },
 ];

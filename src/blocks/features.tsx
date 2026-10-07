@@ -39,33 +39,33 @@ const copy = (key: string, field = 'text') => COPY[key]?.[field]?.() ?? '';
 const CELLS = [
   {
     key: 'resolution',
-    image: '/imgs/generated/feature-4k.jpg',
+    image: '/imgs/generated/feature-4k-e853adff.jpg',
     className: 'sm:col-span-2 lg:col-span-4 lg:row-span-2',
     large: true,
   },
   {
     key: 'edit',
-    image: '/imgs/generated/feature-edit.jpg',
+    image: '/imgs/generated/feature-edit-71c49861.jpg',
     className: 'lg:col-span-2',
   },
   {
     key: 'product',
-    image: '/imgs/generated/feature-product.jpg',
+    image: '/imgs/generated/feature-product-d7e5d34c.jpg',
     className: 'lg:col-span-2',
   },
   {
     key: 'text',
-    image: '/imgs/generated/feature-text.jpg',
+    image: '/imgs/generated/feature-text-58650da5.jpg',
     className: 'lg:col-span-2',
   },
   {
     key: 'fusion',
-    image: '/imgs/generated/feature-fusion.jpg',
+    image: '/imgs/generated/feature-fusion-a4472661.jpg',
     className: 'lg:col-span-2',
   },
   {
     key: 'character',
-    image: '/imgs/generated/feature-character.jpg',
+    image: '/imgs/generated/feature-character-39ad2301.jpg',
     className: 'lg:col-span-2',
   },
 ];

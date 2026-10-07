@@ -3,16 +3,10 @@ import { createFileRoute } from '@tanstack/react-router';
 import { AIMediaType } from '@/core/ai';
 import { getAuth } from '@/core/auth';
 import { getUserTasksPage } from '@/modules/ai-tasks/service';
+import { getAllConfigs } from '@/modules/config/service';
 import { respData, respErr } from '@/lib/resp';
 
-function parseJson(value: unknown): Record<string, any> {
-  if (typeof value !== 'string' || !value) return {};
-  try {
-    return JSON.parse(value);
-  } catch {
-    return {};
-  }
-}
+import { syncImageTask, taskView } from './-task';
 
 // The signed-in user's image generations, newest first.
 async function GET({ request }: { request: Request }) {
@@ -35,23 +29,21 @@ async function GET({ request }: { request: Request }) {
       pageSize,
     });
 
-    return respData({
-      total,
-      items: items.map((task) => {
-        const info = parseJson(task.taskInfo);
-        const result = parseJson(task.taskResult);
-        return {
-          id: task.id,
-          prompt: task.prompt,
-          status: task.status,
-          imageUrl: result.imageUrl ?? null,
-          aspectRatio: info.aspectRatio ?? null,
-          resolution: info.resolution ?? null,
-          costCredits: task.costCredits,
-          createdAt: task.createdAt,
-        };
-      }),
-    });
+    // Unfinished tasks (e.g. the tab was closed mid-generation) are advanced
+    // here, so the image still lands in My images.
+    const unfinished = items.some(
+      (t) => t.status === 'pending' || t.status === 'processing'
+    );
+    const configs = unfinished ? await getAllConfigs() : {};
+    const views = await Promise.all(
+      items.map((task) =>
+        task.status === 'pending' || task.status === 'processing'
+          ? syncImageTask(task, configs).catch(() => taskView(task))
+          : taskView(task)
+      )
+    );
+
+    return respData({ total, items: views });
   } catch (error: any) {
     console.error('[image] history failed:', error);
     return respErr('Internal error');

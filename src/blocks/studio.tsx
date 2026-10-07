@@ -19,6 +19,7 @@ import {
   ASPECT_RATIOS,
   DEFAULT_ASPECT_RATIO,
   DEFAULT_IMAGE_CREDITS,
+  DEFAULT_REFERENCE_CREDITS,
   DEFAULT_RESOLUTION,
   IMAGE_RESOLUTIONS,
   isAspectRatio,
@@ -56,6 +57,21 @@ type GenerateResult = {
   resolution: ImageResolution;
 };
 
+/** /api/image/generate and /api/image/task response. */
+type TaskView = {
+  id: string;
+  status: 'pending' | 'success' | 'failed';
+  progress: number;
+  imageUrl: string | null;
+  prompt: string;
+  aspectRatio: string | null;
+  resolution: string | null;
+};
+
+// Survives a reload mid-generation (per tab).
+const TASK_KEY = 'nb-task';
+const POLL_MS = 2500;
+
 const MODE_LABEL: Record<Mode, () => string> = {
   text: () => m['studio.mode.text'](),
   edit: () => m['studio.mode.edit'](),
@@ -73,6 +89,7 @@ const MODE_PLACEHOLDER: Record<Mode, () => string> = {
 function errorText(message: string) {
   if (message === 'PROMPT_BLOCKED') return m['studio.error.blocked']();
   if (message === 'GENERATION_FAILED') return m['studio.error.failed']();
+  if (message === 'STORAGE_REQUIRED') return m['studio.error.storage']();
   if (message === 'Generation is not configured') {
     return m['studio.error.not_configured']();
   }
@@ -114,16 +131,85 @@ export function Studio() {
   const [paywallMounted, setPaywallMounted] = useState(false);
   if (paywall && !paywallMounted) setPaywallMounted(true);
   const [elapsed, setElapsed] = useState(0);
+  const [taskId, setTaskId] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const promptInput = useRef<HTMLTextAreaElement>(null);
 
   const { data: priceData } = useQuery({
     queryKey: ['image-price'],
     queryFn: () =>
-      apiGet<{ credits: Record<ImageResolution, number> }>('/api/image/price'),
+      apiGet<{
+        credits: Record<ImageResolution, number>;
+        referenceCredits: number;
+      }>('/api/image/price'),
     staleTime: 10 * 60_000,
   });
   const prices = priceData?.credits ?? DEFAULT_IMAGE_CREDITS;
+  const referenceCredits =
+    priceData?.referenceCredits ?? DEFAULT_REFERENCE_CREDITS;
+  const cost = prices[resolution] + referenceCredits * refs.length;
+
+  // Resume a generation that was running before a reload.
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(TASK_KEY);
+      if (saved) setTaskId(saved);
+    } catch {
+      // Storage unavailable.
+    }
+  }, []);
+
+  function trackTask(id: string | null) {
+    setTaskId(id);
+    try {
+      if (id) sessionStorage.setItem(TASK_KEY, id);
+      else sessionStorage.removeItem(TASK_KEY);
+    } catch {
+      // Storage unavailable.
+    }
+  }
+
+  // Poll the running task until it succeeds or fails.
+  const taskQuery = useQuery({
+    queryKey: ['image-task', taskId],
+    queryFn: () =>
+      apiGet<TaskView>(`/api/image/task?id=${encodeURIComponent(taskId!)}`),
+    enabled: !!taskId,
+    refetchInterval: (q) =>
+      q.state.data && q.state.data.status !== 'pending' ? false : POLL_MS,
+    retry: 3,
+  });
+  const task = taskQuery.data;
+
+  useEffect(() => {
+    if (!task || task.id !== taskId || task.status === 'pending') return;
+    trackTask(null);
+    queryClient.invalidateQueries({ queryKey: ['user-credits'] });
+    queryClient.invalidateQueries({ queryKey: ['image-history'] });
+    if (task.status === 'success' && task.imageUrl) {
+      setResult({
+        id: task.id,
+        imageUrl: task.imageUrl,
+        prompt: task.prompt,
+        aspectRatio: isAspectRatio(task.aspectRatio)
+          ? task.aspectRatio
+          : DEFAULT_ASPECT_RATIO,
+        resolution: isImageResolution(task.resolution)
+          ? task.resolution
+          : DEFAULT_RESOLUTION,
+      });
+      track('image_generate_success', { resolution: task.resolution ?? '' });
+    } else {
+      toast.error(m['studio.error.failed']());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task, taskId]);
+
+  // A task that can't be found anymore (deleted / other account): stop.
+  useEffect(() => {
+    if (taskQuery.isError && taskId) trackTask(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskQuery.isError, taskId]);
 
   // Restore a draft saved before the sign-in round trip.
   useEffect(() => {
@@ -171,7 +257,7 @@ export function Studio() {
 
   const generate = useMutation({
     mutationFn: () =>
-      apiPost<GenerateResult>('/api/image/generate', {
+      apiPost<TaskView>('/api/image/generate', {
         prompt: prompt.trim(),
         aspectRatio,
         resolution,
@@ -182,10 +268,9 @@ export function Studio() {
       track('image_generate_start', { resolution, refs: refs.length });
     },
     onSuccess: (data) => {
-      setResult(data);
-      track('image_generate_success', { resolution });
+      // Credits are already reserved; the task finishes in the background.
       queryClient.invalidateQueries({ queryKey: ['user-credits'] });
-      queryClient.invalidateQueries({ queryKey: ['image-history'] });
+      trackTask(data.id);
     },
     onError: (e: Error) => {
       if (e.message === 'Insufficient credits') {
@@ -197,15 +282,17 @@ export function Studio() {
     },
   });
 
+  const busy = generate.isPending || !!taskId;
+  const progress = taskId ? (task?.progress ?? 0) : 0;
+
   useEffect(() => {
-    if (!generate.isPending) return;
+    if (!busy) return;
     const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(timer);
-  }, [generate.isPending]);
+  }, [busy]);
 
   const uploading = refs.some((r) => r.uploading);
-  const canGenerate =
-    prompt.trim().length > 0 && !uploading && !generate.isPending;
+  const canGenerate = prompt.trim().length > 0 && !uploading && !busy;
 
   async function addFiles(files: FileList | null) {
     if (!files?.length) return;
@@ -474,12 +561,10 @@ export function Studio() {
               disabled={!canGenerate}
               className="bg-primary text-primary-foreground ml-auto inline-flex h-11 items-center gap-2 rounded-lg px-5 font-medium whitespace-nowrap transition-[opacity,transform] hover:opacity-90 active:translate-y-px disabled:opacity-40"
             >
-              {generate.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : null}
+              {busy ? <Loader2 className="size-4 animate-spin" /> : null}
               {m['studio.generate']()}
               <span className="bg-banana rounded px-1.5 py-0.5 font-mono text-[11px] font-medium text-[oklch(0.2_0.01_260)]">
-                {m['studio.credits_cost']({ credits: prices[resolution] })}
+                {m['studio.credits_cost']({ credits: cost })}
               </span>
             </button>
           </div>
@@ -574,18 +659,19 @@ export function Studio() {
             />
           )}
 
-          {generate.isPending && (
+          {busy && (
             <div className="bg-background/80 absolute inset-0 flex flex-col items-center justify-center gap-3 backdrop-blur-sm">
               <div className="border-foreground/15 border-t-banana size-9 animate-spin rounded-full border-2" />
               <p className="text-sm font-medium">{m['studio.generating']()}</p>
               <p className="text-muted-foreground text-xs tabular-nums">
                 {m['studio.elapsed']({ seconds: elapsed })}
+                {progress > 0 ? ` · ${progress}%` : ''}
               </p>
             </div>
           )}
         </div>
 
-        {!result && !generate.isPending && (
+        {!result && !busy && (
           <p className="text-muted-foreground mt-3 flex items-center gap-2 px-1 text-xs">
             <ImagePlus className="size-3.5" />
             {m['studio.output_hint']()}
