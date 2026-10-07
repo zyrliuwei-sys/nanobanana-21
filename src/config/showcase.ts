@@ -32,28 +32,28 @@ export const SHOWCASE: ShowcaseItem[] = [
     key: 'fashion',
     src: '/imgs/generated/showcase-fashion.jpg',
     prompt:
-      'Fashion model in an oversized neon lime jacket on a rainy Tokyo street at night, cinematic reflections',
+      'High-fashion editorial of a model in a tailored ivory wool coat walking a rain-slicked Paris street at night, cinematic reflections',
     aspectRatio: '4:5',
   },
   {
     key: 'food',
     src: '/imgs/generated/showcase-food.jpg',
     prompt:
-      'Overhead shot of a ramen bowl with a soft-boiled egg, rising steam, dark slate table, moody food photography',
+      'Fine-dining plate of seared scallops with microgreens and beurre blanc on a matte black ceramic plate, moody Michelin restaurant lighting',
     aspectRatio: '4:5',
   },
   {
     key: 'anime',
-    src: '/imgs/generated/showcase-anime.jpg',
+    src: '/imgs/generated/showcase-jewelry.jpg',
     prompt:
-      'Anime-style girl riding a bicycle through a sunflower field under a vivid summer sky, hand-painted look',
+      'Close-up of a delicate gold necklace with an emerald pendant draped over white silk, soft window light, luxury jewelry photography',
     aspectRatio: '4:5',
   },
   {
     key: 'architecture',
     src: '/imgs/generated/showcase-architecture.jpg',
     prompt:
-      'Futuristic white museum with a curved concrete facade at blue hour, architectural photography',
+      'Minimalist luxury villa with an infinity pool overlooking the sea at blue hour, warm interior lights, architectural photography',
     aspectRatio: '4:5',
   },
   {
@@ -65,9 +65,9 @@ export const SHOWCASE: ShowcaseItem[] = [
   },
   {
     key: 'character',
-    src: '/imgs/generated/showcase-character.jpg',
+    src: '/imgs/generated/showcase-watch.jpg',
     prompt:
-      'Cute 3D clay character of a banana astronaut floating in space, soft lighting, Pixar-style render',
+      'Close-up of a luxury steel chronograph wristwatch resting on dark walnut wood, soft directional light, macro detail of brushed steel, high-end advertising',
     aspectRatio: '4:5',
   },
 ];
@@ -81,56 +81,56 @@ export const STUDIO_EXAMPLES: ShowcaseItem[] = [
     key: 'coffee',
     src: '/imgs/generated/example-coffee.jpg',
     prompt:
-      'Iced latte in a tall glass with swirling milk on a sunlit marble cafe table, morning window light, lifestyle product photography',
+      'Specialty pour-over coffee setup with a glass carafe on a walnut bar counter, soft morning light',
     aspectRatio: '4:5',
   },
   {
-    key: 'cat',
-    src: '/imgs/generated/example-cat.jpg',
+    key: 'sushi',
+    src: '/imgs/generated/example-sushi.jpg',
     prompt:
-      'Fluffy orange cat wearing tiny round glasses reading a newspaper in a cozy armchair, warm lamp light, whimsical photorealistic',
+      'Omakase sushi nigiri on a black slate counter, chef hands placing fresh tuna, intimate Tokyo restaurant',
     aspectRatio: '4:5',
   },
   {
     key: 'sneaker',
     src: '/imgs/generated/example-sneaker.jpg',
     prompt:
-      'Chunky retro sneaker splashing through a puddle, frozen water droplets, bright cobalt blue background, high-speed sports advertising photography',
+      'Luxury white leather sneaker on polished concrete, soft studio light, clean minimal product shot',
     aspectRatio: '4:5',
   },
   {
-    key: 'watercolor',
-    src: '/imgs/generated/example-watercolor.jpg',
+    key: 'venice',
+    src: '/imgs/generated/example-venice.jpg',
     prompt:
-      'Loose watercolor painting of a Venetian canal with gondolas at sunset, soft washes of peach and teal, visible paper texture',
+      'Venice Grand Canal at sunset seen from a gondola, golden light on historic palazzi, cinematic travel photography',
     aspectRatio: '4:5',
   },
   {
-    key: 'cyberpunk',
-    src: '/imgs/generated/example-cyberpunk.jpg',
+    key: 'car',
+    src: '/imgs/generated/example-car.jpg',
     prompt:
-      'Cyberpunk samurai standing in neon purple rain on a rooftop above a futuristic city, cinematic concept art, dramatic lighting',
+      'Sleek silver sports car with no logos on a coastal mountain road at dusk, motion blur, automotive advertising',
     aspectRatio: '4:5',
   },
   {
     key: 'skincare',
     src: '/imgs/generated/example-skincare.jpg',
     prompt:
-      'Minimal skincare serum bottles arranged on pastel pink stone pedestals with soft shadows, clean beauty product photography',
+      'Minimal skincare serum bottles arranged on travertine blocks with soft shadows, clean beauty photography',
     aspectRatio: '4:5',
   },
   {
     key: 'mountain',
     src: '/imgs/generated/example-mountain.jpg',
     prompt:
-      'Hiker standing on a rocky ridge above a sea of clouds at sunrise, golden light on snowy peaks, epic adventure photography',
+      'Hiker standing on a rocky ridge above a sea of clouds at sunrise, golden light on snowy peaks',
     aspectRatio: '4:5',
   },
   {
-    key: 'pixel',
-    src: '/imgs/generated/example-pixel.jpg',
+    key: 'peonies',
+    src: '/imgs/generated/example-peonies.jpg',
     prompt:
-      'Isometric pixel art of a tiny bakery shop with an awning, plants and a cat on the doorstep, vibrant retro game style',
+      'Bouquet of white peonies in a ceramic vase against a dark background, Dutch master style lighting, fine-art still life',
     aspectRatio: '4:5',
   },
 ];
@@ -140,6 +140,6 @@ export const STUDIO_SAMPLE: ShowcaseItem = {
   key: 'sample',
   src: '/imgs/generated/studio-sample.jpg',
   prompt:
-    'Elegant still life of a ceramic vase with dried pampas grass and a linen cloth on a wooden table, soft natural window light, editorial interior photography',
+    'Fashion model in a sculptural white gown standing in desert dunes at golden hour, wind in the fabric',
   aspectRatio: '4:5',
 };
