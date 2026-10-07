@@ -27,7 +27,7 @@ import {
   type AspectRatio,
   type ImageResolution,
 } from '@/config/image-gen';
-import { SHOWCASE } from '@/config/showcase';
+import { STUDIO_EXAMPLES, STUDIO_SAMPLE } from '@/config/showcase';
 import { apiGet, apiPost, apiUpload } from '@/lib/api-client';
 import { webpSrcSet } from '@/lib/img';
 import { track } from '@/lib/track';
@@ -269,14 +269,14 @@ export function Studio() {
   }
 
   function applyExample(index: number) {
-    const item = SHOWCASE[index];
+    const item = STUDIO_EXAMPLES[index];
     setPrompt(item.prompt);
     if (isAspectRatio(item.aspectRatio)) setAspectRatio(item.aspectRatio);
     promptInput.current?.focus();
   }
 
   function surprise() {
-    const pick = Math.floor(Math.random() * SHOWCASE.length);
+    const pick = Math.floor(Math.random() * STUDIO_EXAMPLES.length);
     applyExample(pick);
   }
 
@@ -489,7 +489,7 @@ export function Studio() {
               {m['studio.examples']()}
             </p>
             <div className="grid grid-cols-4 gap-2 sm:gap-3">
-              {SHOWCASE.map((item, i) => (
+              {STUDIO_EXAMPLES.map((item, i) => (
                 <button
                   key={item.key}
                   type="button"
@@ -562,12 +562,12 @@ export function Studio() {
             />
           ) : (
             <img
-              src={SHOWCASE[1].src}
+              src={STUDIO_SAMPLE.src}
               // Desktop LCP element.
               fetchPriority="high"
-              srcSet={webpSrcSet(SHOWCASE[1].src)}
+              srcSet={webpSrcSet(STUDIO_SAMPLE.src)}
               sizes="(min-width: 1024px) 560px, 100vw"
-              alt={SHOWCASE[1].prompt}
+              alt={STUDIO_SAMPLE.prompt}
               width={768}
               height={960}
               className="max-h-[600px] w-auto max-w-full object-contain"

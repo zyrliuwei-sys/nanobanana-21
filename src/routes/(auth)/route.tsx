@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 
-import { SHOWCASE } from '@/config/showcase';
 import { webpSrcSet } from '@/lib/img';
 import { m } from '@/paraglide/messages.js';
 
@@ -10,6 +9,13 @@ export const Route = createFileRoute('/(auth)')({
 });
 
 // Form on the left, a contact sheet of example images on the right (lg+).
+const AUTH_PRINTS = [
+  '/imgs/generated/auth-1.jpg',
+  '/imgs/generated/auth-2.jpg',
+  '/imgs/generated/auth-3.jpg',
+  '/imgs/generated/auth-4.jpg',
+];
+
 function AuthLayout() {
   return (
     <div className="grid min-h-svh lg:grid-cols-[1fr_minmax(0,44%)]">
@@ -21,24 +27,19 @@ function AuthLayout() {
         className="bg-card border-border relative hidden flex-col justify-center overflow-hidden border-l px-14 py-16 lg:flex"
       >
         <div className="grid max-w-md grid-cols-2 gap-4">
-          {[SHOWCASE[0], SHOWCASE[1], SHOWCASE[4], SHOWCASE[7]].map(
-            (item, i) => (
-              <div
-                key={item.key}
-                className={`frame ${i % 2 ? 'translate-y-8' : ''}`}
-              >
-                <img
-                  src={item.src}
-                  srcSet={webpSrcSet(item.src)}
-                  sizes="220px"
-                  alt=""
-                  width={300}
-                  height={375}
-                  className="aspect-[4/5] w-full rounded-[calc(var(--radius)-2px)] object-cover"
-                />
-              </div>
-            )
-          )}
+          {AUTH_PRINTS.map((src, i) => (
+            <div key={src} className={`frame ${i % 2 ? 'translate-y-8' : ''}`}>
+              <img
+                src={src}
+                srcSet={webpSrcSet(src)}
+                sizes="220px"
+                alt=""
+                width={300}
+                height={375}
+                className="aspect-[4/5] w-full rounded-[calc(var(--radius)-2px)] object-cover"
+              />
+            </div>
+          ))}
         </div>
         <p className="font-display mt-16 max-w-md text-2xl leading-snug font-semibold tracking-tight">
           {m['landing.cta.headline']()}
