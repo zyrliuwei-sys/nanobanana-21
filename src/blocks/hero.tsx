@@ -26,7 +26,8 @@ export function Hero() {
               {m['landing.hero.eyebrow']()}
             </p>
             <h1 className="font-display text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[4.25rem]">
-              {m['landing.hero.headline_start']()}{' '}
+              {/* One text node, so the SSR H1 has no <!-- --> separator. */}
+              {`${m['landing.hero.headline_start']()} `}
               <span className="marker whitespace-nowrap">
                 {m['landing.hero.headline_accent']()}
               </span>
