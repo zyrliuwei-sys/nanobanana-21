@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar } from 'lucide-react';
 
 import { Link } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
+import { jsonLd } from '@/lib/json-ld';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { Footer } from '@/blocks/footer';
@@ -68,7 +69,7 @@ export const Route = createFileRoute('/blog/$slug')({
       scripts: [
         {
           type: 'application/ld+json',
-          children: JSON.stringify({
+          children: jsonLd({
             '@context': 'https://schema.org',
             '@type': 'BlogPosting',
             headline: post.title,

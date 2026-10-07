@@ -57,7 +57,7 @@ async function POST({ request }: { request: Request }) {
       : DEFAULT_RESOLUTION;
 
     const configs = await getAllConfigs();
-    const references = resolveReferenceUrls(body?.images, request.url, configs);
+    const references = await resolveReferenceUrls(body?.images, configs);
     if (!references) return respErr('Invalid reference image');
     if (references.length > MAX_REFERENCE_IMAGES) {
       return respErr(`Up to ${MAX_REFERENCE_IMAGES} reference images`);

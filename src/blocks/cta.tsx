@@ -1,9 +1,14 @@
 import { ArrowRight } from 'lucide-react';
 
 import { Link } from '@/core/i18n/navigation';
-import { SHOWCASE } from '@/config/showcase';
 import { webpSrcSet } from '@/lib/img';
 import { m } from '@/paraglide/messages.js';
+
+const CTA_PRINTS = [
+  '/imgs/generated/cta-1.jpg',
+  '/imgs/generated/cta-2.jpg',
+  '/imgs/generated/cta-3.jpg',
+];
 
 export function CTA() {
   return (
@@ -30,11 +35,11 @@ export function CTA() {
           </div>
         </div>
         <div aria-hidden className="hidden gap-3 lg:flex">
-          {[SHOWCASE[5], SHOWCASE[2], SHOWCASE[7]].map((item, i) => (
+          {CTA_PRINTS.map((src, i) => (
             <img
-              key={item.key}
-              src={item.src}
-              srcSet={webpSrcSet(item.src)}
+              key={src}
+              src={src}
+              srcSet={webpSrcSet(src)}
               sizes="128px"
               alt=""
               loading="lazy"

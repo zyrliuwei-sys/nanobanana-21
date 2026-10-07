@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
+import { jsonLd } from '@/lib/json-ld';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { About } from '@/blocks/about';
@@ -69,7 +70,7 @@ export const Route = createFileRoute('/')({
       scripts: [
         {
           type: 'application/ld+json',
-          children: JSON.stringify({
+          children: jsonLd({
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
             name: envConfigs.app_name,
@@ -82,7 +83,7 @@ export const Route = createFileRoute('/')({
         },
         {
           type: 'application/ld+json',
-          children: JSON.stringify({
+          children: jsonLd({
             '@context': 'https://schema.org',
             '@type': 'FAQPage',
             mainEntity: FAQ_KEYS.map((key) => ({

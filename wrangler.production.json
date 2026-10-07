@@ -7,7 +7,7 @@
     "DATABASE_PROVIDER": "d1",
     "VITE_APP_URL": "https://nanobanana-21.com",
     "VITE_APP_NAME": "nanobanana 2.1",
-    "VITE_APP_DESCRIPTION": "AI image generator and editor powered by Gemini Nano Banana 2.1 — 4K text-to-image, multi-reference editing and accurate text rendering.",
+    "VITE_APP_DESCRIPTION": "AI image generator and editor powered by Gemini Nano Banana 2.1: 4K text-to-image, multi-reference editing and accurate text rendering.",
     "VITE_APP_LOGO": "/logo.svg",
     "VITE_DEFAULT_LOCALE": "en"
   },

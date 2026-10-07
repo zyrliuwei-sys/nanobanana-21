@@ -53,7 +53,8 @@ async function GET({ request }: { request: Request }) {
       }),
     });
   } catch (error: any) {
-    return respErr(error?.message || 'Internal error');
+    console.error('[image] history failed:', error);
+    return respErr('Internal error');
   }
 }
 

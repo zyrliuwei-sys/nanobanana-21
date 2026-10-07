@@ -1,13 +1,18 @@
-import { SHOWCASE } from '@/config/showcase';
 import { webpSrcSet } from '@/lib/img';
 import { m } from '@/paraglide/messages.js';
 import { Studio } from '@/blocks/studio';
 
-// Three loose prints pinned beside the headline (real showcase images).
+// Three loose prints pinned beside the headline.
 const PRINTS = [
-  { item: SHOWCASE[3], className: 'top-6 left-0 -rotate-6' },
-  { item: SHOWCASE[0], className: 'top-0 left-[30%] rotate-2 z-10' },
-  { item: SHOWCASE[4], className: 'top-10 right-0 rotate-[7deg]' },
+  { src: '/imgs/generated/hero-1.jpg', className: 'top-6 left-0 -rotate-6' },
+  {
+    src: '/imgs/generated/hero-2.jpg',
+    className: 'top-0 left-[30%] rotate-2 z-10',
+  },
+  {
+    src: '/imgs/generated/hero-3.jpg',
+    className: 'top-10 right-0 rotate-[7deg]',
+  },
 ];
 
 export function Hero() {
@@ -33,14 +38,14 @@ export function Hero() {
           </div>
 
           <div aria-hidden className="relative hidden h-[250px] lg:block">
-            {PRINTS.map(({ item, className }) => (
+            {PRINTS.map(({ src, className }) => (
               <div
-                key={item.key}
+                key={src}
                 className={`frame absolute w-[150px] ${className}`}
               >
                 <img
-                  src={item.src}
-                  srcSet={webpSrcSet(item.src)}
+                  src={src}
+                  srcSet={webpSrcSet(src)}
                   sizes="150px"
                   alt=""
                   // Hidden below lg: lazy keeps mobile from downloading them.

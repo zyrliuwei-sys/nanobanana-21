@@ -1,10 +1,37 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { UploadFileFunction } from '@/core/ai/types';
 import { getStorage } from '@/modules/storage/service';
 
 const LOCAL_UPLOAD_RE = /^\/uploads\/[\w-]+\.(?:jpe?g|png|webp|gif)$/i;
+
+const MIME: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  gif: 'image/gif',
+};
+
+/**
+ * Read a local-fallback upload (`/uploads/<file>`) straight from disk.
+ * Never fetched over HTTP: resolving it against `request.url` would trust the
+ * Host header and let a spoofed host turn this into a server-side fetch.
+ * The regex above already rules out traversal (`[\w-]+` + fixed extension).
+ */
+export async function readLocalUpload(
+  urlPath: string
+): Promise<{ body: Buffer; contentType: string } | null> {
+  if (!LOCAL_UPLOAD_RE.test(urlPath)) return null;
+  const file = path.join(process.cwd(), 'public', urlPath);
+  const ext = urlPath.split('.').pop()!.toLowerCase();
+  try {
+    return { body: await readFile(file), contentType: MIME[ext] };
+  } catch {
+    return null;
+  }
+}
 
 function hostOf(value: string | undefined) {
   if (!value) return null;
@@ -19,14 +46,14 @@ function hostOf(value: string | undefined) {
 /**
  * Reference images must come from our own upload endpoint (local
  * `/uploads/...` in dev, or the configured R2 public domain) — the server
- * fetches them, so arbitrary URLs would be an SSRF vector. Returns absolute
- * URLs, or null if any entry is not allowed.
+ * fetches them, so arbitrary URLs would be an SSRF vector. Returns fetchable
+ * URLs (storage https URLs or inline data: URLs), or null if any entry is not
+ * allowed.
  */
-export function resolveReferenceUrls(
+export async function resolveReferenceUrls(
   input: unknown,
-  requestUrl: string,
   configs: Record<string, string>
-): string[] | null {
+): Promise<string[] | null> {
   if (input === undefined || input === null) return [];
   if (!Array.isArray(input)) return null;
   const storageHost = hostOf(configs.r2_domain);
@@ -34,7 +61,12 @@ export function resolveReferenceUrls(
   for (const raw of input) {
     if (typeof raw !== 'string') return null;
     if (LOCAL_UPLOAD_RE.test(raw)) {
-      out.push(new URL(raw, requestUrl).href);
+      // Local dev fallback: inline as a data: URL (the provider fetches it).
+      const local = await readLocalUpload(raw);
+      if (!local) return null;
+      out.push(
+        `data:${local.contentType};base64,${local.body.toString('base64')}`
+      );
       continue;
     }
     let url: URL;

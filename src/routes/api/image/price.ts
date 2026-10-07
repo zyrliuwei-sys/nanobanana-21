@@ -9,7 +9,8 @@ async function GET() {
   try {
     return respData({ credits: resolveImageCredits(await getAllConfigs()) });
   } catch (error: any) {
-    return respErr(error?.message || 'Internal error');
+    console.error('[image] price failed:', error);
+    return respErr('Internal error');
   }
 }
 

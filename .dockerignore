@@ -40,3 +40,6 @@ LICENSE
 *.log
 *.pem
 *.tsbuildinfo
+
+# Runtime image uploads (local no-storage fallback)
+public/uploads

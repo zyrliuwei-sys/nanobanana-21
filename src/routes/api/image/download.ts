@@ -4,6 +4,8 @@ import { getAuth } from '@/core/auth';
 import { findTask } from '@/modules/ai-tasks/service';
 import { respErr } from '@/lib/resp';
 
+import { readLocalUpload } from './-shared';
+
 // Stream one of the user's generated images back as an attachment
 // (a cross-origin storage URL can't be force-downloaded from the browser).
 async function GET({ request }: { request: Request }) {
@@ -25,11 +27,23 @@ async function GET({ request }: { request: Request }) {
     }
     if (!imageUrl) return respErr('Not found');
 
-    const upstream = await fetch(new URL(imageUrl, request.url));
-    if (!upstream.ok || !upstream.body) return respErr('Download failed');
-    const type = upstream.headers.get('content-type') || 'image/png';
+    // Local dev fallback files are read from disk; storage URLs are absolute
+    // https URLs written by the server itself.
+    let body: BodyInit;
+    let type: string;
+    if (imageUrl.startsWith('/')) {
+      const local = await readLocalUpload(imageUrl);
+      if (!local) return respErr('Not found');
+      body = new Uint8Array(local.body);
+      type = local.contentType;
+    } else {
+      const upstream = await fetch(imageUrl);
+      if (!upstream.ok || !upstream.body) return respErr('Download failed');
+      body = upstream.body;
+      type = upstream.headers.get('content-type') || 'image/png';
+    }
     const ext = type.split('/')[1]?.split(';')[0] || 'png';
-    return new Response(upstream.body, {
+    return new Response(body, {
       headers: {
         'content-type': type,
         'content-disposition': `attachment; filename="nanobanana-${task.id.slice(0, 8)}.${ext}"`,
@@ -37,7 +51,8 @@ async function GET({ request }: { request: Request }) {
       },
     });
   } catch (error: any) {
-    return respErr(error?.message || 'Download failed');
+    console.error('[image] download failed:', error);
+    return respErr('Download failed');
   }
 }
 
