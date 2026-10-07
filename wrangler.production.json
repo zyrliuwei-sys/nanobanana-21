@@ -1,24 +1,23 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "hotel-lobby-ai",
+  "name": "nanobanana-21",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
   "vars": {
     "DATABASE_PROVIDER": "d1",
-    "VITE_APP_URL": "https://hotel-lobby.org",
-    "VITE_APP_NAME": "Hotel Lobby AI",
-    "VITE_APP_DESCRIPTION": "Plan a two-person Hotel Lobby AI filter video and copy a prompt for an image-to-video studio.",
+    "VITE_APP_URL": "https://nanobanana-21.com",
+    "VITE_APP_NAME": "nanobanana 2.1",
+    "VITE_APP_DESCRIPTION": "AI image generator and editor powered by Gemini Nano Banana 2.1 — 4K text-to-image, multi-reference editing and accurate text rendering.",
     "VITE_APP_LOGO": "/logo.svg",
     "VITE_DEFAULT_LOCALE": "en"
   },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "hotel-lobby-db",
-      "database_id": "9c9d279e-2929-4b38-9d0f-0259fb6a96dd",
+      "database_name": "nanobanana-21",
+      "database_id": "8cc01afb-d979-43d1-b765-fcbbb7c5c752",
       "migrations_dir": "drizzle"
     }
   ],
-  "triggers": { "crons": ["* * * * *"] },
-  "routes": [{ "pattern": "hotel-lobby.org", "custom_domain": true }]
+  "routes": [{ "pattern": "nanobanana-21.com", "custom_domain": true }]
 }

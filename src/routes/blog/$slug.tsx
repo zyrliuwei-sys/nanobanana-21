@@ -5,7 +5,7 @@ import { ArrowLeft, Calendar } from 'lucide-react';
 import { Link } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { m } from '@/paraglide/messages.js';
-import { getLocale, localizeUrl } from '@/paraglide/runtime.js';
+import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { MarkdownContent } from '@/components/markdown-content';
@@ -25,18 +25,73 @@ export const Route = createFileRoute('/blog/$slug')({
   head: ({ loaderData }) => {
     if (!loaderData) return {};
     const { locale, post } = loaderData;
-    const canonical = localizeUrl(`${envConfigs.app_url}/blog/${post.slug}`, {
-      locale: locale as any,
-    }).href;
+    const urlFor = (loc: string) =>
+      localizeUrl(`${envConfigs.app_url}/blog/${post.slug}`, {
+        locale: loc as any,
+      }).href;
+    const canonical = urlFor(locale);
+    const image = post.image
+      ? new URL(post.image, envConfigs.app_url).href
+      : `${envConfigs.app_url}/og.jpg`;
     return {
       meta: [
-        { title: `${post.title} | ${envConfigs.app_name}` },
+        {
+          // Keep long titles under ~60 chars in SERPs: skip the brand suffix.
+          title:
+            post.title.length > 44
+              ? post.title
+              : `${post.title} | ${envConfigs.app_name}`,
+        },
         { name: 'description', content: post.description },
+        { property: 'og:type', content: 'article' },
+        { property: 'og:title', content: post.title },
+        { property: 'og:description', content: post.description },
+        { property: 'og:url', content: canonical },
+        { property: 'og:image', content: image },
+        { name: 'twitter:image', content: image },
+        { property: 'article:published_time', content: post.createdAt },
+      ],
+      links: [
+        { rel: 'canonical', href: canonical },
+        // Local MDX posts ship in every locale; database posts may not.
         ...(post.source === 'local'
-          ? [{ name: 'robots', content: 'noindex,follow' }]
+          ? [
+              ...locales.map((loc) => ({
+                rel: 'alternate',
+                hrefLang: loc,
+                href: urlFor(loc),
+              })),
+              { rel: 'alternate', hrefLang: 'x-default', href: urlFor('en') },
+            ]
           : []),
       ],
-      links: [{ rel: 'canonical', href: canonical }],
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: post.title,
+            description: post.description,
+            image,
+            datePublished: post.createdAt,
+            inLanguage: locale,
+            mainEntityOfPage: canonical,
+            author: {
+              '@type': 'Organization',
+              name: post.authorName || envConfigs.app_name,
+            },
+            publisher: {
+              '@type': 'Organization',
+              name: envConfigs.app_name,
+              logo: {
+                '@type': 'ImageObject',
+                url: `${envConfigs.app_url}/logo.svg`,
+              },
+            },
+          }),
+        },
+      ],
     };
   },
   component: BlogPostPage,
@@ -57,7 +112,7 @@ function BlogPostPage() {
         <article className="mx-auto max-w-3xl">
           <Link
             href="/blog"
-            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm font-medium transition-colors"
+            className="text-muted-foreground hover:text-foreground -my-2 inline-flex items-center gap-2 py-2 text-sm font-medium transition-colors"
           >
             <ArrowLeft className="size-4" />
             {m['blog.back_to_blog']()}

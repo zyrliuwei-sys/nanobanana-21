@@ -17,9 +17,7 @@ export const Route = createFileRoute('/blog/')({
   },
   head: ({ loaderData }) => {
     const locale = loaderData?.locale;
-    const hasPublishedPosts = loaderData?.posts.some(
-      (post) => post.source === 'db'
-    );
+    const hasPosts = (loaderData?.posts.length ?? 0) > 0;
     const urlFor = (loc: string) =>
       localizeUrl(`${envConfigs.app_url}/blog`, { locale: loc as any }).href;
     return {
@@ -31,9 +29,15 @@ export const Route = createFileRoute('/blog/')({
           name: 'description',
           content: m['blog.description']({}, { locale: locale as any }),
         },
-        ...(!hasPublishedPosts
-          ? [{ name: 'robots', content: 'noindex,follow' }]
-          : []),
+        ...(!hasPosts ? [{ name: 'robots', content: 'noindex,follow' }] : []),
+        {
+          property: 'og:title',
+          content: `${m['blog.title']({}, { locale: locale as any })} | ${envConfigs.app_name}`,
+        },
+        {
+          property: 'og:description',
+          content: m['blog.description']({}, { locale: locale as any }),
+        },
       ],
       links: [
         { rel: 'canonical', href: urlFor(locale ?? 'en') },
@@ -42,6 +46,7 @@ export const Route = createFileRoute('/blog/')({
           hrefLang: loc,
           href: urlFor(loc),
         })),
+        { rel: 'alternate', hrefLang: 'x-default', href: urlFor('en') },
       ],
     };
   },
@@ -54,13 +59,13 @@ function BlogPage() {
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 px-4 py-16 sm:py-24">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-16 text-center">
-            <h1 className="font-serif text-4xl font-normal tracking-tight sm:text-5xl">
+      <main className="flex-1 px-4 pt-14 pb-20 sm:pt-20 sm:pb-28">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-14 max-w-2xl">
+            <h1 className="font-display text-4xl leading-[1.05] font-semibold tracking-[-0.03em] sm:text-5xl">
               {m['blog.title']()}
             </h1>
-            <p className="text-muted-foreground mx-auto mt-5 max-w-lg">
+            <p className="text-muted-foreground mt-5 text-lg leading-relaxed">
               {m['blog.description']()}
             </p>
           </div>

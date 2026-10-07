@@ -27,7 +27,9 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...init,
     headers: {
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(typeof init?.body === 'string'
+        ? { 'Content-Type': 'application/json' }
+        : {}),
       ...init?.headers,
     },
   });
@@ -53,6 +55,10 @@ export const apiPost = <T = void>(url: string, body?: unknown) =>
     method: 'POST',
     body: body == null ? undefined : JSON.stringify(body),
   });
+
+// multipart/form-data upload — the browser sets the boundary header.
+export const apiUpload = <T>(url: string, form: FormData) =>
+  request<T>(url, { method: 'POST', body: form });
 
 export const apiPut = <T = void>(url: string, body?: unknown) =>
   request<T>(url, { method: 'PUT', body: JSON.stringify(body) });

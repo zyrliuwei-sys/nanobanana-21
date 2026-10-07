@@ -14,12 +14,9 @@ import { drizzle } from 'drizzle-orm/sqlite-proxy';
  */
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
+let pendingToken: Promise<string> | null = null;
 
-async function getToken(forceRefresh = false): Promise<string> {
-  if (process.env.CLOUDFLARE_API_TOKEN) return process.env.CLOUDFLARE_API_TOKEN;
-  if (!forceRefresh && cachedToken && Date.now() < cachedToken.expiresAt) {
-    return cachedToken.value;
-  }
+async function fetchWranglerToken(): Promise<string> {
   const { execFile } = await import('node:child_process');
   const output = await new Promise<string>((resolve, reject) =>
     execFile(
@@ -35,9 +32,23 @@ async function getToken(forceRefresh = false): Promise<string> {
       'Could not get a Cloudflare token: run `npx wrangler login`'
     );
   }
-  // OAuth tokens last ~1h; refresh well before that.
-  cachedToken = { value, expiresAt: Date.now() + 30 * 60_000 };
+  // `wrangler auth token` may hand back a token that expires in a few
+  // minutes (it only refreshes once expired), so keep the cache short; auth
+  // failures also force a refresh in rawQuery.
+  cachedToken = { value, expiresAt: Date.now() + 5 * 60_000 };
   return value;
+}
+
+async function getToken(forceRefresh = false): Promise<string> {
+  if (process.env.CLOUDFLARE_API_TOKEN) return process.env.CLOUDFLARE_API_TOKEN;
+  if (!forceRefresh && cachedToken && Date.now() < cachedToken.expiresAt) {
+    return cachedToken.value;
+  }
+  // Share one in-flight `wrangler auth token` across concurrent queries.
+  pendingToken ??= fetchWranglerToken().finally(() => {
+    pendingToken = null;
+  });
+  return pendingToken;
 }
 
 async function rawQuery(sql: string, params: unknown[]) {
@@ -50,26 +61,42 @@ async function rawQuery(sql: string, params: unknown[]) {
   }
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/raw`;
 
-  for (const forceRefresh of [false, true]) {
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${await getToken(forceRefresh)}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ sql, params }),
-    });
-    if (resp.status === 401 && !forceRefresh) continue;
+  let lastError: unknown;
+  for (const retry of [false, true]) {
+    let resp: Response;
+    try {
+      resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sql, params }),
+      });
+    } catch (error) {
+      // Network blip (e.g. a local proxy dropping the connection): retry once.
+      lastError = error;
+      continue;
+    }
+    // Expired or revoked token: refresh it and retry once.
+    if ((resp.status === 401 || resp.status === 403) && !retry) {
+      cachedToken = null;
+      continue;
+    }
     const data: any = await resp.json().catch(() => ({}));
     if (!resp.ok || !data?.success) {
       const message =
         data?.errors?.map((e: any) => e.message).join('; ') ||
         `D1 HTTP ${resp.status}`;
+      console.error(`[d1-http] ${message}`);
       throw new Error(message);
     }
     return (data.result?.[0]?.results?.rows ?? []) as unknown[][];
   }
-  throw new Error('D1 HTTP authentication failed');
+  console.error('[d1-http] request failed', lastError);
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('D1 HTTP authentication failed');
 }
 
 let instance: ReturnType<typeof drizzle> | null = null;

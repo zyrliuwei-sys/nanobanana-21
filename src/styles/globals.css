@@ -4,12 +4,18 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-sans: 'DM Sans Variable', 'PingFang SC', sans-serif;
-  --font-serif-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  --font-sans: 'Geist', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-serif-display:
+    'Bricolage Grotesque', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono-spec: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-banana: var(--banana);
+  --color-banana-ink: var(--banana-ink);
+  --font-display: var(--font-serif-display);
+  --font-mono: var(--font-mono-spec);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -57,41 +63,85 @@
 }
 
 @layer base {
-  :root,
+  /* Brand: "Gallery wall + banana highlighter".
+     Light (default): cool gallery-white wall, ink typography, ink buttons.
+     Dark: graphite darkroom. Banana yellow is a highlighter, never body
+     text on light: --banana fills marks/swatches, --banana-ink is the
+     readable variant for small accents on light backgrounds. */
+  :root {
+    --background: oklch(0.975 0.003 250);
+    --foreground: oklch(0.19 0.012 260);
+    --card: oklch(0.995 0.001 250);
+    --card-foreground: oklch(0.19 0.012 260);
+    --popover: oklch(0.995 0.001 250);
+    --popover-foreground: oklch(0.19 0.012 260);
+    --primary: oklch(0.21 0.012 260);
+    --primary-foreground: oklch(0.985 0.002 250);
+    --secondary: oklch(0.935 0.004 250);
+    --secondary-foreground: oklch(0.21 0.012 260);
+    --muted: oklch(0.945 0.004 250);
+    --muted-foreground: oklch(0.47 0.012 260);
+    --accent: oklch(0.95 0.045 96);
+    --accent-foreground: oklch(0.21 0.012 260);
+    --destructive: oklch(0.55 0.2 27);
+    --destructive-foreground: oklch(0.985 0 0);
+    --border: oklch(0.9 0.004 250);
+    --input: oklch(0.87 0.005 250);
+    --ring: oklch(0.74 0.14 92);
+    --banana: oklch(0.89 0.15 96);
+    --banana-ink: oklch(0.47 0.1 82);
+    --chart-1: oklch(0.21 0.012 260);
+    --chart-2: oklch(0.82 0.15 94);
+    --chart-3: oklch(0.6 0.08 230);
+    --chart-4: oklch(0.7 0.06 160);
+    --chart-5: oklch(0.6 0.12 40);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.965 0.003 250);
+    --sidebar-foreground: oklch(0.19 0.012 260);
+    --sidebar-primary: oklch(0.21 0.012 260);
+    --sidebar-primary-foreground: oklch(0.985 0.002 250);
+    --sidebar-accent: oklch(0.93 0.006 250);
+    --sidebar-accent-foreground: oklch(0.19 0.012 260);
+    --sidebar-border: oklch(0.9 0.004 250);
+    --sidebar-ring: oklch(0.74 0.14 92);
+  }
+
   .dark {
-    --background: oklch(0.15 0.009 42);
-    --foreground: oklch(0.94 0.013 78);
-    --card: oklch(0.2 0.012 44);
-    --card-foreground: oklch(0.94 0.013 78);
-    --popover: oklch(0.2 0.012 44);
-    --popover-foreground: oklch(0.94 0.013 78);
-    --primary: oklch(0.73 0.09 57);
-    --primary-foreground: oklch(0.15 0.009 42);
-    --secondary: oklch(0.25 0.013 43);
-    --secondary-foreground: oklch(0.94 0.013 78);
-    --muted: oklch(0.25 0.013 43);
-    --muted-foreground: oklch(0.71 0.021 67);
-    --accent: oklch(0.3 0.02 44);
-    --accent-foreground: oklch(0.96 0.012 78);
-    --destructive: oklch(0.62 0.19 25);
-    --destructive-foreground: oklch(0.98 0 0);
-    --border: oklch(0.34 0.019 44);
-    --input: oklch(0.34 0.019 44);
-    --ring: oklch(0.73 0.09 57);
-    --chart-1: oklch(0.73 0.09 57);
-    --chart-2: oklch(0.61 0.08 38);
-    --chart-3: oklch(0.78 0.03 79);
-    --chart-4: oklch(0.55 0.035 170);
-    --chart-5: oklch(0.63 0.055 26);
-    --radius: 0.25rem;
-    --sidebar: oklch(0.17 0.01 42);
-    --sidebar-foreground: oklch(0.94 0.013 78);
-    --sidebar-primary: oklch(0.73 0.09 57);
-    --sidebar-primary-foreground: oklch(0.15 0.009 42);
-    --sidebar-accent: oklch(0.27 0.016 44);
-    --sidebar-accent-foreground: oklch(0.94 0.013 78);
-    --sidebar-border: oklch(0.34 0.019 44);
-    --sidebar-ring: oklch(0.73 0.09 57);
+    --background: oklch(0.165 0.006 260);
+    --foreground: oklch(0.95 0.004 90);
+    --card: oklch(0.205 0.007 260);
+    --card-foreground: oklch(0.95 0.004 90);
+    --popover: oklch(0.205 0.007 260);
+    --popover-foreground: oklch(0.95 0.004 90);
+    --primary: oklch(0.95 0.004 90);
+    --primary-foreground: oklch(0.18 0.008 260);
+    --secondary: oklch(0.25 0.008 260);
+    --secondary-foreground: oklch(0.95 0.004 90);
+    --muted: oklch(0.24 0.008 260);
+    --muted-foreground: oklch(0.71 0.008 260);
+    --accent: oklch(0.29 0.035 96);
+    --accent-foreground: oklch(0.95 0.004 90);
+    --destructive: oklch(0.64 0.19 27);
+    --destructive-foreground: oklch(0.985 0 0);
+    --border: oklch(0.295 0.008 260);
+    --input: oklch(0.33 0.008 260);
+    --ring: oklch(0.82 0.14 94);
+    --banana: oklch(0.87 0.14 96);
+    --banana-ink: oklch(0.87 0.14 96);
+    --chart-1: oklch(0.95 0.004 90);
+    --chart-2: oklch(0.82 0.15 94);
+    --chart-3: oklch(0.65 0.08 230);
+    --chart-4: oklch(0.7 0.06 160);
+    --chart-5: oklch(0.65 0.12 40);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.185 0.007 260);
+    --sidebar-foreground: oklch(0.95 0.004 90);
+    --sidebar-primary: oklch(0.95 0.004 90);
+    --sidebar-primary-foreground: oklch(0.18 0.008 260);
+    --sidebar-accent: oklch(0.25 0.008 260);
+    --sidebar-accent-foreground: oklch(0.95 0.004 90);
+    --sidebar-border: oklch(0.295 0.008 260);
+    --sidebar-ring: oklch(0.82 0.14 94);
   }
 }
 
@@ -165,6 +215,74 @@
     .animate-drift-b,
     .animate-drift-c {
       animation: none !important;
+    }
+  }
+}
+
+@layer components {
+  /* Brand signature: a hand-swiped banana highlighter behind key words.
+     Sweeps in once on load; static under reduced motion. */
+  .marker {
+    background-image: linear-gradient(
+      100deg,
+      transparent 0.2em,
+      var(--banana) 0.2em,
+      var(--banana) calc(100% - 0.15em),
+      transparent calc(100% - 0.15em)
+    );
+    background-repeat: no-repeat;
+    --marker-h: 0.42em;
+    background-position: 0 88%;
+    background-size: 100% var(--marker-h);
+    padding-inline: 0.06em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    animation: marker-swipe 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.25s both;
+  }
+  /* Dark: light text on yellow is illegible, so the swipe drops below the
+     baseline as a thick underline instead of sitting behind the letters. */
+  .dark .marker {
+    --marker-h: 0.14em;
+    background-position: 0 100%;
+    padding-bottom: 0.06em;
+  }
+  @keyframes marker-swipe {
+    from {
+      background-size: 0% var(--marker-h);
+    }
+  }
+
+  /* Contact-sheet frame: thin print border around gallery images. */
+  .frame {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    border-radius: calc(var(--radius) + 2px);
+    box-shadow:
+      0 1px 0 oklch(0.2 0.01 260 / 0.04),
+      0 12px 32px -18px oklch(0.2 0.01 260 / 0.25);
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marker {
+      animation: none;
+    }
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
     }
   }
 }

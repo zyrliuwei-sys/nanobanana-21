@@ -30,27 +30,24 @@ export type PricingProduct = {
 };
 
 /**
- * Hotel Lobby AI catalog. A duet video costs a fixed number of credits
- * (see ./hotel-lobby-pricing.ts — 440 at the default 8s reference video), and
- * every pack holds a whole number of videos.
+ * nanobanana 2.1 catalog. One image costs 10 / 15 / 25 credits at 1K / 2K / 4K
+ * (see ./image-gen.ts; admin can override). Credits are priced at roughly
+ * $0.01 each, with bigger packs and subscriptions slightly cheaper.
  *
- * Pricing floor: no product may sell credits below $0.01 each, so every
- * video is sold at ≥ 7× its fal cost. That is why there are no discounted
- * yearly plans — check priceInCents / credits ≥ 0.01 before adding a product.
+ * Prices and product IDs are unchanged from the previous catalog so existing
+ * payment-provider product mappings keep working — only credits changed.
  * Keys MUST match what the pricing UI sends as product_id.
  */
 export const pricingCatalog: Record<string, PricingProduct> = {
   pack_single: {
     productId: 'pack_single',
-    productName: 'Single Video',
-    planName: 'Single Video',
-    description: 'Single Video',
+    productName: 'Mini Pack',
+    planName: 'Mini Pack',
+    description: 'Mini Pack',
     type: PaymentType.ONE_TIME,
-    // $4.90 for one 8 s video (440 credits = duetCredits(8)). Added
-    // 2026-10-04 after no paid orders the day the floor moved to $9.90.
     priceInCents: 490,
     currency: 'usd',
-    credits: 440,
+    credits: 500,
   },
   pack_starter: {
     productId: 'pack_starter',
@@ -58,11 +55,9 @@ export const pricingCatalog: Record<string, PricingProduct> = {
     planName: 'Starter Pack',
     description: 'Starter Pack',
     type: PaymentType.ONE_TIME,
-    // $9.90 for two 8 s videos (≈ 7× fal cost after PayPal fees); was
-    // $5 / 440 until 2026-10-03 — compare paid starter orders per day.
     priceInCents: 990,
     currency: 'usd',
-    credits: 880,
+    credits: 1100,
   },
   pack_standard: {
     productId: 'pack_standard',
@@ -72,7 +67,7 @@ export const pricingCatalog: Record<string, PricingProduct> = {
     type: PaymentType.ONE_TIME,
     priceInCents: 2300,
     currency: 'usd',
-    credits: 2200,
+    credits: 2600,
   },
   pack_pro: {
     productId: 'pack_pro',
@@ -82,7 +77,7 @@ export const pricingCatalog: Record<string, PricingProduct> = {
     type: PaymentType.ONE_TIME,
     priceInCents: 4400,
     currency: 'usd',
-    credits: 4400,
+    credits: 5200,
   },
   basic_monthly: {
     productId: 'basic_monthly',
@@ -92,7 +87,7 @@ export const pricingCatalog: Record<string, PricingProduct> = {
     type: PaymentType.SUBSCRIPTION,
     priceInCents: 2300,
     currency: 'usd',
-    credits: 2200,
+    credits: 2800,
     plan: {
       name: 'Basic',
       interval: PaymentInterval.MONTH,
@@ -107,7 +102,7 @@ export const pricingCatalog: Record<string, PricingProduct> = {
     type: PaymentType.SUBSCRIPTION,
     priceInCents: 4400,
     currency: 'usd',
-    credits: 4400,
+    credits: 6000,
     plan: {
       name: 'Pro',
       interval: PaymentInterval.MONTH,
@@ -122,7 +117,7 @@ export const pricingCatalog: Record<string, PricingProduct> = {
     type: PaymentType.SUBSCRIPTION,
     priceInCents: 8800,
     currency: 'usd',
-    credits: 8800,
+    credits: 13000,
     plan: {
       name: 'Studio',
       interval: PaymentInterval.MONTH,

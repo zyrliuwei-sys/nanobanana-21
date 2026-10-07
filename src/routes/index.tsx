@@ -1,26 +1,50 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
-import {
-  HERO_DESKTOP_SIZES,
-  HERO_DESKTOP_WIDTHS,
-  HERO_MOBILE_MEDIA,
-  HERO_MOBILE_WIDTHS,
-  optSrcSet,
-} from '@/config/hotel-lobby-images';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
-import { HotelLobbyPage } from '@/blocks/hotel-lobby';
+import { About } from '@/blocks/about';
+import { CTA } from '@/blocks/cta';
+import { FAQ, FAQ_KEYS, faqCopy } from '@/blocks/faq';
+import { Features } from '@/blocks/features';
+import { Footer } from '@/blocks/footer';
+import { Header } from '@/blocks/header';
+import { Hero } from '@/blocks/hero';
+import { HowItWorks } from '@/blocks/how-it-works';
+import { Pricing } from '@/blocks/pricing';
+import { Showcase } from '@/blocks/showcase';
+import { Tips } from '@/blocks/tips';
+import { UseCases } from '@/blocks/use-cases';
+
+const OG_IMAGE = '/og.jpg';
+
+function HomePage() {
+  return (
+    <>
+      <Header />
+      <main>
+        <Hero />
+        <Showcase />
+        <About />
+        <Features />
+        <HowItWorks />
+        <Tips />
+        <UseCases />
+        <Pricing />
+        <FAQ />
+        <CTA />
+      </main>
+      <Footer />
+    </>
+  );
+}
 
 export const Route = createFileRoute('/')({
   loader: () => ({ locale: getLocale() }),
   head: ({ loaderData }) => {
-    const locale = loaderData?.locale ?? 'en';
-    const title = m['common.metadata.title']({}, { locale: locale as any });
-    const description = m['common.metadata.description'](
-      {},
-      { locale: locale as any }
-    );
+    const locale = (loaderData?.locale ?? 'en') as any;
+    const title = m['common.metadata.title']({}, { locale });
+    const description = m['common.metadata.description']({}, { locale });
     const urlFor = (loc: string) =>
       localizeUrl(`${envConfigs.app_url}/`, { locale: loc as any }).href;
     return {
@@ -30,39 +54,10 @@ export const Route = createFileRoute('/')({
         { property: 'og:title', content: title },
         { property: 'og:description', content: description },
         { property: 'og:type', content: 'website' },
-        {
-          property: 'og:image',
-          content: `${envConfigs.app_url}/imgs/generated/hotel-lobby-duet.png`,
-        },
+        { property: 'og:image', content: `${envConfigs.app_url}${OG_IMAGE}` },
         { name: 'twitter:card', content: 'summary_large_image' },
       ],
       links: [
-        // LCP: the hero <picture> sits behind <source>s, which the browser
-        // only discovers after layout — preload the matching rendition.
-        {
-          rel: 'preload',
-          as: 'image',
-          type: 'image/avif',
-          media: HERO_MOBILE_MEDIA,
-          imageSrcSet: optSrcSet('hero-mobile', HERO_MOBILE_WIDTHS, 'avif'),
-          imageSizes: '100vw',
-          fetchPriority: 'high',
-        },
-        {
-          rel: 'preload',
-          as: 'image',
-          type: 'image/avif',
-          media: '(min-width: 601px)',
-          imageSrcSet: optSrcSet('hero-desktop', HERO_DESKTOP_WIDTHS, 'avif'),
-          imageSizes: HERO_DESKTOP_SIZES,
-          fetchPriority: 'high',
-        },
-        {
-          rel: 'preload',
-          as: 'image',
-          type: 'image/webp',
-          href: '/imgs/generated/opt/studio-backdrop-960.webp',
-        },
         { rel: 'canonical', href: urlFor(locale) },
         ...locales.map((loc) => ({
           rel: 'alternate',
@@ -76,16 +71,32 @@ export const Route = createFileRoute('/')({
           type: 'application/ld+json',
           children: JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'WebPage',
-            name: title,
-            description,
+            '@type': 'WebApplication',
+            name: envConfigs.app_name,
             url: urlFor(locale),
+            description,
+            applicationCategory: 'MultimediaApplication',
+            operatingSystem: 'Web',
             inLanguage: locale,
-            primaryImageOfPage: `${envConfigs.app_url}/imgs/generated/hotel-lobby-duet.png`,
+          }),
+        },
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: FAQ_KEYS.map((key) => ({
+              '@type': 'Question',
+              name: faqCopy(key, 'question'),
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: faqCopy(key, 'answer'),
+              },
+            })),
           }),
         },
       ],
     };
   },
-  component: HotelLobbyPage,
+  component: HomePage,
 });

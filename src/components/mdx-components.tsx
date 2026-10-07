@@ -7,7 +7,7 @@ export const mdxComponents: MDXComponents = {
   h1: ({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
     <h1
       className={cn(
-        'text-foreground mt-6 mb-2 text-xl font-semibold tracking-tight md:text-2xl',
+        'font-display text-foreground mt-12 mb-3 text-2xl font-semibold tracking-tight md:text-3xl',
         className
       )}
       {...props}
@@ -16,7 +16,7 @@ export const mdxComponents: MDXComponents = {
   h2: ({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
     <h2
       className={cn(
-        'text-foreground mt-6 mb-2 text-lg font-semibold tracking-tight md:text-xl',
+        'font-display text-foreground mt-12 mb-3 text-xl font-semibold tracking-[-0.015em] md:text-2xl',
         className
       )}
       {...props}
@@ -25,7 +25,7 @@ export const mdxComponents: MDXComponents = {
   h3: ({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
     <h3
       className={cn(
-        'text-foreground mt-4 mb-1.5 text-base font-semibold tracking-tight',
+        'font-display text-foreground mt-8 mb-2 text-lg font-semibold tracking-tight',
         className
       )}
       {...props}
@@ -33,14 +33,14 @@ export const mdxComponents: MDXComponents = {
   ),
   p: ({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) => (
     <p
-      className={cn('text-foreground/90 mt-2 leading-7', className)}
+      className={cn('text-foreground/85 mt-4 leading-[1.8]', className)}
       {...props}
     />
   ),
   a: ({ className, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
       className={cn(
-        'text-primary font-medium underline-offset-4 hover:underline',
+        'text-foreground decoration-banana hover:decoration-foreground font-medium underline decoration-2 underline-offset-4 transition-colors',
         className
       )}
       {...props}
@@ -49,7 +49,7 @@ export const mdxComponents: MDXComponents = {
   ul: ({ className, ...props }: HTMLAttributes<HTMLUListElement>) => (
     <ul
       className={cn(
-        'marker:text-muted-foreground mt-2 ml-6 list-disc space-y-1',
+        'marker:text-muted-foreground mt-4 ml-6 list-disc space-y-2',
         className
       )}
       {...props}
@@ -58,14 +58,17 @@ export const mdxComponents: MDXComponents = {
   ol: ({ className, ...props }: HTMLAttributes<HTMLOListElement>) => (
     <ol
       className={cn(
-        'marker:text-muted-foreground mt-2 ml-6 list-decimal space-y-1',
+        'marker:text-muted-foreground mt-4 ml-6 list-decimal space-y-2',
         className
       )}
       {...props}
     />
   ),
   li: ({ className, ...props }: HTMLAttributes<HTMLLIElement>) => (
-    <li className={cn('text-foreground/90 leading-7', className)} {...props} />
+    <li
+      className={cn('text-foreground/85 leading-[1.8]', className)}
+      {...props}
+    />
   ),
   strong: ({ className, ...props }: HTMLAttributes<HTMLElement>) => (
     <strong

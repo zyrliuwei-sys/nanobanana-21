@@ -18,7 +18,7 @@ export function Blog({ posts }: { posts: BlogPost[] }) {
     <section id="blog" className="px-4 py-24 sm:py-32">
       <div className="mx-auto max-w-5xl">
         <div className="mb-20 text-center">
-          <h2 className="font-serif text-4xl font-normal tracking-tight sm:text-5xl">
+          <h2 className="font-display text-[2rem] leading-[1.08] font-semibold tracking-[-0.025em] sm:text-[2.75rem]">
             {m['landing.blog.title']()}
           </h2>
           <p className="text-muted-foreground mx-auto mt-5 max-w-lg">

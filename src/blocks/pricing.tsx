@@ -4,8 +4,9 @@ import { lazy, Suspense, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   CalendarClock,
-  Film,
+  Image as ImageIcon,
   Infinity as InfinityIcon,
+  Layers,
   MonitorPlay,
   Sparkles,
   XCircle,
@@ -14,7 +15,10 @@ import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
 import { useRouter } from '@/core/i18n/navigation';
-import { duetCredits } from '@/config/hotel-lobby-pricing';
+import {
+  DEFAULT_IMAGE_CREDITS,
+  type ImageResolution,
+} from '@/config/image-gen';
 import { pricingCatalog } from '@/config/pricing';
 import { apiGet, apiPost } from '@/lib/api-client';
 import { currentPathWithQuery } from '@/lib/redirect';
@@ -55,8 +59,11 @@ const ALL_PROVIDERS: PaymentProvider[] = [
 export function Pricing({
   title,
   variant = 'section',
+  headingLevel: Heading = 'h2',
 }: {
   title?: string;
+  /** `h1` when the block is the page's main content (/pricing). */
+  headingLevel?: 'h1' | 'h2';
   /** `dialog` drops the page-section chrome for use inside a modal. */
   variant?: 'section' | 'dialog';
 } = {}) {
@@ -78,17 +85,14 @@ export function Pricing({
     [configs]
   );
 
-  // Live per-video price so "≈ N videos" matches what generation charges.
+  // Live per-image price so "≈ N images" matches what generation charges.
   const { data: priceData } = useQuery({
-    queryKey: ['hotel-lobby-price'],
+    queryKey: ['image-price'],
     queryFn: () =>
-      apiGet<{ credits: number; lengths?: Record<string, number> }>(
-        '/api/hotel-lobby/price'
-      ),
+      apiGet<{ credits: Record<ImageResolution, number> }>('/api/image/price'),
     staleTime: 10 * 60_000,
   });
-  const perVideo = priceData?.credits ?? duetCredits();
-  const perLongVideo = priceData?.lengths?.['15'] ?? duetCredits(15);
+  const perImage = priceData?.credits ?? DEFAULT_IMAGE_CREDITS;
 
   function features(credits: number, extra: PricingFeature[]) {
     return [
@@ -99,19 +103,14 @@ export function Pricing({
         }),
       },
       {
-        icon: Film,
-        label:
-          credits >= perLongVideo
-            ? m['landing.pricing.feature_videos_lengths']({
-                short: Math.floor(credits / perVideo),
-                long: Math.floor(credits / perLongVideo),
-              })
-            : m['landing.pricing.feature_videos_short_only']({
-                short: Math.floor(credits / perVideo),
-                credits: perLongVideo.toLocaleString('en-US'),
-              }),
+        icon: ImageIcon,
+        label: m['landing.pricing.feature_images']({
+          count: Math.floor(credits / perImage['1K']).toLocaleString('en-US'),
+          count4k: Math.floor(credits / perImage['4K']).toLocaleString('en-US'),
+        }),
       },
       { icon: MonitorPlay, label: m['landing.pricing.feature_hd']() },
+      { icon: Layers, label: m['landing.pricing.feature_refs']() },
       ...extra,
     ];
   }
@@ -312,27 +311,36 @@ export function Pricing({
     <Wrapper
       id={dialog ? undefined : 'pricing'}
       className={
-        dialog ? undefined : 'border-border border-t px-4 py-24 sm:py-32'
+        dialog
+          ? undefined
+          : 'border-border scroll-mt-20 border-t px-4 py-20 sm:py-28'
       }
     >
       <div className="mx-auto max-w-5xl">
-        <div className={dialog ? 'mb-8 pr-8 text-center' : 'mb-20 text-center'}>
-          <h2
+        <div
+          className={
+            dialog
+              ? 'mb-8 pr-8 text-center'
+              : 'mx-auto mb-14 max-w-2xl text-center'
+          }
+        >
+          <Heading
             className={
               dialog
-                ? 'font-serif text-2xl font-normal tracking-tight sm:text-3xl'
-                : 'font-serif text-4xl font-normal tracking-tight sm:text-5xl'
+                ? 'font-display text-2xl font-semibold tracking-tight sm:text-3xl'
+                : 'font-display text-[2rem] leading-[1.08] font-semibold tracking-[-0.025em] sm:text-[2.75rem]'
             }
           >
             {title ?? m['landing.pricing.title']()}
-          </h2>
-          <p className="text-muted-foreground mt-5">
+          </Heading>
+          <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
             {m['landing.pricing.description']()}
           </p>
-          <p className="text-muted-foreground mt-2 text-sm">
-            {m['landing.pricing.per_video_lengths']({
-              short: perVideo.toLocaleString('en-US'),
-              long: perLongVideo.toLocaleString('en-US'),
+          <p className="text-muted-foreground mt-3 font-mono text-xs">
+            {m['landing.pricing.per_image']({
+              k1: perImage['1K'],
+              k2: perImage['2K'],
+              k4: perImage['4K'],
             })}
           </p>
         </div>

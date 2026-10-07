@@ -27,7 +27,9 @@ export function Link({ href, locale, prefetch, ...rest }: LinkProps) {
     return <a href={href} {...rest} />;
   }
   const Comp = RouterLink as any;
-  return <Comp to={href} {...rest} />;
+  // Split "/path?a=1#hash" so query and hash survive (a bare `to` string
+  // would treat them as part of the path).
+  return <Comp {...toNavigateOptions(href)} {...rest} />;
 }
 
 export function usePathname(): string {

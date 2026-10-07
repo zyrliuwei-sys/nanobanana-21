@@ -254,18 +254,21 @@ export async function listTasksByStatus(params: {
 }
 
 /**
- * One page of a user's tasks for a model, newest first, with the total.
+ * One page of a user's tasks (optionally one model / media type), newest
+ * first, with the total.
  */
 export async function getUserTasksPage(params: {
   userId: string;
-  model: string;
+  model?: string;
+  mediaType?: string;
   page?: number;
   pageSize?: number;
 }) {
-  const { userId, model, page = 1, pageSize = 12 } = params;
+  const { userId, model, mediaType, page = 1, pageSize = 12 } = params;
   const where = and(
     eq(aiTask.userId, userId),
-    eq(aiTask.model, model),
+    model ? eq(aiTask.model, model) : undefined,
+    mediaType ? eq(aiTask.mediaType, mediaType) : undefined,
     isNull(aiTask.deletedAt)
   );
   const [items, totals] = await Promise.all([

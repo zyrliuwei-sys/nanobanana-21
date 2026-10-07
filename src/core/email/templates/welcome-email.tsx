@@ -16,42 +16,42 @@ import {
 const copy = {
   en: {
     preview: (app: string) =>
-      `Your account is ready — make your first ${app} duet video`,
+      `Your account is ready — create your first ${app} image`,
     heading: (app: string) => `Welcome to ${app}`,
     greeting: (name?: string) => (name ? `Hi ${name},` : 'Hi there,'),
     intro:
-      'Your account is ready. Upload two photos and we turn them into the viral two-person duet in the orange recording booth — scene, moves and audio included.',
+      'Your account is ready. Describe any image — or upload up to 14 reference photos — and Nano Banana 2.1 renders it in seconds, up to 4K.',
     stepsTitle: 'How it works',
     steps: [
-      'Upload one clear portrait for each person.',
-      'Get a free watermarked preview of you both in the booth.',
-      'Happy with it? Animate it — your MP4 with audio is ready in about 3–5 minutes.',
+      'Write a prompt, or add reference images to edit and combine.',
+      'Pick an aspect ratio and a resolution: 1K, 2K or 4K.',
+      'Hit Generate and download your image in seconds.',
     ],
     credits: (n: number) =>
       `We've added ${n.toLocaleString('en-US')} free credits to your account to get you started.`,
     refund: 'If a generation fails, your credits are refunded automatically.',
-    cta: 'Make your first duet',
-    videos: 'Your finished videos are always saved in My videos.',
+    cta: 'Create your first image',
+    videos: 'Every image you make is saved in My images.',
     footer: (app: string) =>
       `You're receiving this email because you created an account on ${app}.`,
   },
   zh: {
-    preview: (app: string) => `账号已就绪，来做你的第一个 ${app} 对唱视频`,
+    preview: (app: string) => `账号已就绪，来生成你的第一张 ${app} 图片`,
     heading: (app: string) => `欢迎来到 ${app}`,
     greeting: (name?: string) => (name ? `${name}，你好：` : '你好：'),
     intro:
-      '你的账号已经准备好了。上传两张照片，我们就能为你生成暖橙色录音棚里的双人对唱视频：场景、动作和声音一步到位。',
-    stepsTitle: '三步出片',
+      '你的账号已经准备好了。描述你想要的画面，或上传最多 14 张参考图，Nano Banana 2.1 几秒内就能为你生成最高 4K 的图片。',
+    stepsTitle: '三步出图',
     steps: [
-      '为两个人各上传一张清晰的正脸照。',
-      '免费生成一张带水印的预览，看看你们在录音棚里的样子。',
-      '满意就点生成视频，约 3–5 分钟拿到带音频的 MP4。',
+      '写下提示词，或添加参考图进行编辑与融合。',
+      '选择画面比例与分辨率：1K、2K 或 4K。',
+      '点击生成，几秒后即可下载。',
     ],
     credits: (n: number) =>
       `我们已向你的账号赠送 ${n.toLocaleString('en-US')} 积分，可以直接开始。`,
     refund: '生成失败会自动退还积分。',
-    cta: '做第一个对唱视频',
-    videos: '生成好的视频都会保存在「我的视频」里。',
+    cta: '生成第一张图片',
+    videos: '生成的图片都会保存在「我的图片」里。',
     footer: (app: string) => `你收到这封邮件，是因为你在 ${app} 注册了账号。`,
   },
 };
@@ -69,7 +69,7 @@ export function WelcomeEmail({
   logoUrl?: string;
   /** Where the main button goes (the create section). */
   url: string;
-  /** "My videos" page; the line is omitted when not given. */
+  /** "My images" page; the line is omitted when not given. */
   videosUrl?: string;
   name?: string;
   /** Signup credits granted, if any — omitted from the copy when 0. */
@@ -172,7 +172,7 @@ const styles: Record<string, React.CSSProperties> = {
     height: 6,
     borderRadius: 999,
     marginBottom: 18,
-    background: 'linear-gradient(90deg, #f97316 0%, #fb923c 55%, #fdba74 100%)',
+    background: '#F2DC5D',
   },
   brandRow: {
     display: 'flex',
@@ -211,7 +211,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '20px 0 14px',
   },
   button: {
-    backgroundColor: '#ea580c',
+    backgroundColor: '#22242A',
     borderRadius: 12,
     color: '#ffffff',
     fontSize: 14,

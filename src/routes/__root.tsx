@@ -10,8 +10,8 @@ import {
   type ErrorComponentProps,
 } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
-import dmSansLatinUrl from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url';
-import bebasLatinUrl from '@fontsource/bebas-neue/files/bebas-neue-latin-400-normal.woff2?url';
+import bricolageUrl from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url';
+import geistUrl from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
 import { ThemeProvider } from 'next-themes';
 
 import { envConfigs } from '@/config';
@@ -65,6 +65,13 @@ export const Route = createRootRoute({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { title: envConfigs.app_name },
         { name: 'description', content: envConfigs.app_description },
+        { property: 'og:site_name', content: envConfigs.app_name },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:image', content: `${envConfigs.app_url}/og.jpg` },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:image', content: `${envConfigs.app_url}/og.jpg` },
       ],
       links: [
         // Preload the latin display/body fonts (declared in styles/fonts.css
@@ -73,14 +80,14 @@ export const Route = createRootRoute({
           rel: 'preload',
           as: 'font',
           type: 'font/woff2',
-          href: bebasLatinUrl,
+          href: bricolageUrl,
           crossOrigin: 'anonymous',
         },
         {
           rel: 'preload',
           as: 'font',
           type: 'font/woff2',
-          href: dmSansLatinUrl,
+          href: geistUrl,
           crossOrigin: 'anonymous',
           // Desktop only: on slow mobile networks this 37 KB file competes
           // with the CSS and hero image; body text falls back to the system
@@ -105,7 +112,7 @@ function RootComponent() {
     <QueryClientProvider client={getQueryClient()}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="dark"
+        defaultTheme="light"
         enableSystem={false}
         disableTransitionOnChange
       >

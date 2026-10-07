@@ -1,43 +1,61 @@
-import { ArrowRight } from 'lucide-react';
-
-import { Link } from '@/core/i18n/navigation';
-import { envConfigs } from '@/config';
-import { cn } from '@/lib/utils';
+import { SHOWCASE } from '@/config/showcase';
+import { webpSrcSet } from '@/lib/img';
 import { m } from '@/paraglide/messages.js';
-import { buttonVariants } from '@/components/ui/button';
-import { DotPattern } from '@/components/ui/dot-pattern';
+import { Studio } from '@/blocks/studio';
+
+// Three loose prints pinned beside the headline (real showcase images).
+const PRINTS = [
+  { item: SHOWCASE[3], className: 'top-6 left-0 -rotate-6' },
+  { item: SHOWCASE[0], className: 'top-0 left-[30%] rotate-2 z-10' },
+  { item: SHOWCASE[4], className: 'top-10 right-0 rotate-[7deg]' },
+];
 
 export function Hero() {
+  const end = m['landing.hero.headline_end']();
   return (
-    <section className="relative isolate flex flex-col items-center justify-center overflow-hidden px-4 pt-24 pb-20 sm:pt-40 sm:pb-32">
-      <DotPattern
-        className={cn(
-          '[mask-image:radial-gradient(ellipse_at_center,white,transparent_75%)]',
-          'text-foreground/15'
-        )}
-      />
-      <div className="relative max-w-3xl space-y-8 text-center">
-        <p className="text-muted-foreground text-xs tracking-[0.25em] uppercase">
-          {envConfigs.app_name}
-        </p>
-        <h1 className="text-foreground font-serif text-5xl leading-[1.1] font-normal tracking-tight sm:text-6xl lg:text-7xl">
-          {m['landing.hero.headline']()}
-        </h1>
-        <p className="text-muted-foreground mx-auto max-w-2xl text-lg leading-relaxed sm:text-xl">
-          {m['landing.hero.subheadline']()}
-        </p>
+    <section id="create" className="scroll-mt-20 px-4 pt-12 pb-20 sm:pt-16">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid items-end gap-10 lg:grid-cols-[1fr_400px]">
+          <div className="max-w-3xl">
+            <p className="text-banana-ink mb-5 font-mono text-xs font-medium tracking-[0.14em] uppercase">
+              {m['landing.hero.eyebrow']()}
+            </p>
+            <h1 className="font-display text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[4.25rem]">
+              {m['landing.hero.headline_start']()}{' '}
+              <span className="marker whitespace-nowrap">
+                {m['landing.hero.headline_accent']()}
+              </span>
+              {end ? ` ${end}` : null}
+            </h1>
+            <p className="text-muted-foreground mt-6 max-w-xl text-lg leading-relaxed text-pretty">
+              {m['landing.hero.subheadline']()}
+            </p>
+          </div>
 
-        <div className="flex items-center justify-center gap-3 pt-4">
-          <Link
-            href="/settings"
-            className={cn(
-              buttonVariants({ size: 'lg' }),
-              'h-12 gap-2 rounded-full px-8'
-            )}
-          >
-            {m['landing.hero.cta']()}
-            <ArrowRight className="size-4" />
-          </Link>
+          <div aria-hidden className="relative hidden h-[250px] lg:block">
+            {PRINTS.map(({ item, className }) => (
+              <div
+                key={item.key}
+                className={`frame absolute w-[150px] ${className}`}
+              >
+                <img
+                  src={item.src}
+                  srcSet={webpSrcSet(item.src)}
+                  sizes="150px"
+                  alt=""
+                  // Hidden below lg: lazy keeps mobile from downloading them.
+                  loading="lazy"
+                  width={300}
+                  height={375}
+                  className="aspect-[4/5] w-full rounded-[calc(var(--radius)-2px)] object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-12">
+          <Studio />
         </div>
       </div>
     </section>

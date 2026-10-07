@@ -8,7 +8,6 @@ import { Link } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
-import { LocaleSelector } from '@/components/locale-selector';
 import { SiteUserMenu } from '@/components/site-user-menu';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { buttonVariants } from '@/components/ui/button';
@@ -35,8 +34,8 @@ export function SiteHeader({
   const user = session?.user;
 
   return (
-    <header className="bg-background/95 border-border sticky top-0 z-50 w-full border-b backdrop-blur-sm">
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6">
+    <header className="bg-background/85 border-border sticky top-0 z-50 w-full border-b backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5">
           <img
@@ -44,9 +43,9 @@ export function SiteHeader({
             alt={logoAlt}
             width={512}
             height={512}
-            className="size-8 rounded-full"
+            className="size-8 rounded-md"
           />
-          <span className="text-base font-bold tracking-tight">
+          <span className="font-display text-[17px] font-semibold tracking-tight">
             {envConfigs.app_name}
           </span>
         </Link>
@@ -79,7 +78,6 @@ export function SiteHeader({
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-3 md:flex">
-          <LocaleSelector />
           <ThemeToggle />
           {user ? (
             <SiteUserMenu
@@ -136,7 +134,6 @@ export function SiteHeader({
             )}
           </nav>
           <div className="border-border mt-3 flex items-center gap-2 border-t pt-3">
-            <LocaleSelector />
             <ThemeToggle />
             <div className="flex-1" />
             {user ? (

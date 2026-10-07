@@ -3,7 +3,6 @@ import type { ComponentType, ReactNode, SVGProps } from 'react';
 import { Link } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { cn } from '@/lib/utils';
-import { LocaleSelector } from '@/components/locale-selector';
 
 export interface FooterColumn {
   title: string;
@@ -40,7 +39,7 @@ export function SiteFooter({
     <footer className="bg-background text-foreground border-border border-t">
       <div className="mx-auto max-w-7xl px-6 pt-14 pb-6 sm:px-10 sm:pt-16 lg:px-16">
         {tagline && (
-          <p className="mb-12 max-w-2xl font-serif text-4xl leading-[1] tracking-wide sm:text-5xl">
+          <p className="font-display mb-12 max-w-2xl text-3xl leading-[1.08] font-semibold tracking-[-0.025em] sm:text-4xl">
             {tagline}
           </p>
         )}
@@ -116,10 +115,6 @@ export function SiteFooter({
           ) : (
             <div />
           )}
-          <LocaleSelector
-            variant="pill"
-            className="border-border text-foreground hover:bg-accent hover:text-accent-foreground"
-          />
         </div>
 
         {/* Bottom bar */}

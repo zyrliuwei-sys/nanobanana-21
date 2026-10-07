@@ -2,9 +2,12 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
 import { baseLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
+import { BLOG_POST_SLUGS, loadLocalPost } from '@/content/posts';
 
 const STATIC_PATHS = [
   '',
+  '/pricing',
+  '/blog',
   '/privacy-policy',
   '/terms-of-service',
   '/acceptable-use-policy',
@@ -57,24 +60,19 @@ export const Route = createFileRoute('/sitemap.xml')({
       GET: async () => {
         const entries: Entry[] = STATIC_PATHS.map((path) => ({
           path,
-          changeFrequency: path === '/blog' ? 'daily' : 'weekly',
-          priority: path === '' ? 1 : 0.8,
+          changeFrequency: path === '/blog' ? 'weekly' : 'monthly',
+          priority: path === '' ? 1 : path === '/pricing' ? 0.9 : 0.6,
         }));
 
-        // Only published project articles belong in the sitemap. The bundled
-        // ShipAny tutorial posts are demo content and carry noindex.
+        // Local MDX articles (bundled, every locale) + published database
+        // articles; a database post with the same slug replaces the local one.
+        const seen = new Set<string>();
         try {
           const { listPublishedArticles } =
             await import('@/modules/posts/service');
           const rows = await listPublishedArticles().catch(() => []);
-          if (rows.length > 0) {
-            entries.push({
-              path: '/blog',
-              changeFrequency: 'weekly',
-              priority: 0.7,
-            });
-          }
           for (const post of rows) {
+            seen.add(post.slug);
             entries.push({
               path: `/blog/${post.slug}`,
               lastModified: new Date(post.createdAt).toISOString(),
@@ -83,7 +81,17 @@ export const Route = createFileRoute('/sitemap.xml')({
             });
           }
         } catch {
-          // Database unreachable — keep the static project pages.
+          // Database unreachable: keep the static and local pages.
+        }
+        for (const slug of BLOG_POST_SLUGS) {
+          const mod = loadLocalPost(slug, baseLocale);
+          if (!mod || seen.has(slug)) continue;
+          entries.push({
+            path: `/blog/${slug}`,
+            lastModified: new Date(mod.meta.created_at).toISOString(),
+            changeFrequency: 'monthly',
+            priority: 0.7,
+          });
         }
 
         const xml = [

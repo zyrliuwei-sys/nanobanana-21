@@ -78,6 +78,13 @@ export function staticPageRouteOptions(slug: string) {
             href: localizeUrl(`${envConfigs.app_url}/${slug}`, { locale: loc })
               .href,
           })),
+          {
+            rel: 'alternate',
+            hrefLang: 'x-default',
+            href: localizeUrl(`${envConfigs.app_url}/${slug}`, {
+              locale: 'en',
+            }).href,
+          },
         ],
       };
     },
@@ -94,16 +101,19 @@ function StaticPage() {
 
   return (
     <article>
-      <header className="border-border mb-6 border-b pb-5">
-        <h1 className="text-foreground text-3xl font-semibold tracking-tight md:text-4xl">
-          {meta.title}
+      <header className="border-border mb-10 border-b pb-10">
+        <p className="text-banana-ink mb-4 font-mono text-xs font-medium tracking-[0.14em] uppercase">
+          {m['common.pages.last_updated']()} {meta.updated_at}
+        </p>
+        <h1 className="font-display text-4xl leading-[1.05] font-semibold tracking-[-0.03em] text-balance md:text-5xl">
+          {/* meta.title carries a " | Brand" suffix for <title>; drop it here. */}
+          {meta.title.split(' | ')[0]}
         </h1>
-        <p className="text-muted-foreground mt-2 text-sm">{meta.description}</p>
-        <p className="text-muted-foreground mt-2 text-xs">
-          {m['common.pages.last_updated']()}: {meta.updated_at}
+        <p className="text-muted-foreground mt-5 text-lg leading-relaxed text-pretty">
+          {meta.description}
         </p>
       </header>
-      <div className="text-foreground/90 text-[15px] leading-7">
+      <div className="text-foreground/90 text-[16px] leading-[1.8]">
         <Suspense fallback={null}>
           <Content />
         </Suspense>

@@ -6,8 +6,9 @@ import { m } from '@/paraglide/messages.js';
 const STATIC_PAGES: { path: string; title: string; description: string }[] = [
   {
     path: '',
-    title: 'Hotel Lobby AI Filter',
-    description: 'Two-person duet planning and prompt guide',
+    title: 'Nano Banana 2.1 AI Image Generator',
+    description:
+      'Generate and edit images with Gemini Nano Banana 2.1: 4K text-to-image, up to 14 reference images, accurate text rendering',
   },
   {
     path: '/privacy-policy',
