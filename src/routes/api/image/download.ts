@@ -4,6 +4,7 @@ import { getAuth } from '@/core/auth';
 import { findTask } from '@/modules/ai-tasks/service';
 import { respErr } from '@/lib/resp';
 
+import { findFreeTask, getVisitor, ownsFreeTask } from './-free';
 import { readLocalUpload } from './-shared';
 
 // Stream one of the user's generated images back as an attachment
@@ -12,18 +13,23 @@ async function GET({ request }: { request: Request }) {
   try {
     const auth = getAuth();
     const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) return respErr('Unauthorized');
+    const userId = session?.user?.id ?? null;
 
     const id = new URL(request.url).searchParams.get('id') || '';
-    const task = id ? await findTask(id) : null;
-    if (!task || task.userId !== session.user.id || task.deletedAt) {
-      return respErr('Not found');
-    }
     let imageUrl = '';
-    try {
-      imageUrl = JSON.parse((task.taskResult as string) || '{}').imageUrl;
-    } catch {
-      // fall through
+    const task = id && userId ? await findTask(id) : null;
+    if (task && task.userId === userId && !task.deletedAt) {
+      try {
+        imageUrl = JSON.parse((task.taskResult as string) || '{}').imageUrl;
+      } catch {
+        // fall through
+      }
+    } else if (id) {
+      // Free trial image: owned by the account or the device cookie.
+      const free = await findFreeTask(id);
+      if (free && ownsFreeTask(free, await getVisitor(request), userId)) {
+        imageUrl = free.sceneImageUrl ?? '';
+      }
     }
     if (!imageUrl) return respErr('Not found');
 
@@ -46,7 +52,7 @@ async function GET({ request }: { request: Request }) {
     return new Response(body, {
       headers: {
         'content-type': type,
-        'content-disposition': `attachment; filename="nanobanana-${task.id.slice(0, 8)}.${ext}"`,
+        'content-disposition': `attachment; filename="nanobanana-${id.slice(0, 8)}.${ext}"`,
         'cache-control': 'private, max-age=3600',
       },
     });

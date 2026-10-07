@@ -55,15 +55,25 @@ type GenerateResult = {
   prompt: string;
   aspectRatio: AspectRatio;
   resolution: ImageResolution;
+  /** Free trial (Nano Banana 2 Lite) vs paid (Nano Banana 2.1). */
+  tier: 'free' | 'paid';
+};
+
+type Quota = {
+  signedIn: boolean;
+  balance: number;
+  unlimited: boolean;
+  freeAvailable: boolean;
 };
 
 /** /api/image/generate and /api/image/task response. */
 type TaskView = {
   id: string;
+  tier?: 'free' | 'paid';
   status: 'pending' | 'success' | 'failed';
   progress: number;
   imageUrl: string | null;
-  prompt: string;
+  prompt?: string;
   aspectRatio: string | null;
   resolution: string | null;
 };
@@ -90,6 +100,7 @@ function errorText(message: string) {
   if (message === 'PROMPT_BLOCKED') return m['studio.error.blocked']();
   if (message === 'GENERATION_FAILED') return m['studio.error.failed']();
   if (message === 'STORAGE_REQUIRED') return m['studio.error.storage']();
+  if (message === 'FREE_PAUSED') return m['studio.error.free_paused']();
   if (message === 'Generation is not configured') {
     return m['studio.error.not_configured']();
   }
@@ -149,6 +160,23 @@ export function Studio() {
     priceData?.referenceCredits ?? DEFAULT_REFERENCE_CREDITS;
   const cost = prices[resolution] + referenceCredits * refs.length;
 
+  // Free trial vs paid: the server decides; this only drives the button.
+  const { data: quota } = useQuery({
+    queryKey: ['image-quota', session?.user?.id ?? 'anon'],
+    queryFn: () => apiGet<Quota>('/api/image/quota'),
+    staleTime: 30_000,
+  });
+  const canPay =
+    !!quota?.signedIn && (quota.unlimited || quota.balance >= cost);
+  const plan: 'paid' | 'free' | 'none' = canPay
+    ? 'paid'
+    : quota?.signedIn && quota.balance > 0
+      ? 'none' // has credits, just not enough: top up
+      : quota?.freeAvailable !== false
+        ? 'free'
+        : 'none';
+  const submittedPrompt = useRef('');
+
   // Resume a generation that was running before a reload.
   useEffect(() => {
     try {
@@ -186,11 +214,13 @@ export function Studio() {
     trackTask(null);
     queryClient.invalidateQueries({ queryKey: ['user-credits'] });
     queryClient.invalidateQueries({ queryKey: ['image-history'] });
+    queryClient.invalidateQueries({ queryKey: ['image-quota'] });
     if (task.status === 'success' && task.imageUrl) {
       setResult({
         id: task.id,
         imageUrl: task.imageUrl,
-        prompt: task.prompt,
+        prompt: task.prompt || submittedPrompt.current,
+        tier: task.tier === 'free' ? 'free' : 'paid',
         aspectRatio: isAspectRatio(task.aspectRatio)
           ? task.aspectRatio
           : DEFAULT_ASPECT_RATIO,
@@ -264,6 +294,7 @@ export function Studio() {
         images: refs.map((r) => r.url).filter(Boolean),
       }),
     onMutate: () => {
+      submittedPrompt.current = prompt.trim();
       setElapsed(0);
       track('image_generate_start', { resolution, refs: refs.length });
     },
@@ -273,9 +304,17 @@ export function Studio() {
       trackTask(data.id);
     },
     onError: (e: Error) => {
+      queryClient.invalidateQueries({ queryKey: ['image-quota'] });
       if (e.message === 'Insufficient credits') {
         track('image_paywall');
         setPaywall(true);
+        return;
+      }
+      if (e.message === 'FREE_USED_SIGN_IN') {
+        track('image_free_signin_prompt');
+        toast(m['studio.free.signin_prompt'](), {
+          action: { label: m['studio.free.signin_cta'](), onClick: goSignIn },
+        });
         return;
       }
       toast.error(errorText(e.message));
@@ -348,8 +387,10 @@ export function Studio() {
 
   function handleGenerate() {
     if (!canGenerate) return;
-    if (!session?.user) {
-      goSignIn();
+    // Known to be out of free images: skip the round trip.
+    if (plan === 'none') {
+      if (!session?.user) goSignIn();
+      else setPaywall(true);
       return;
     }
     generate.mutate();
@@ -564,10 +605,20 @@ export function Studio() {
               {busy ? <Loader2 className="size-4 animate-spin" /> : null}
               {m['studio.generate']()}
               <span className="bg-banana rounded px-1.5 py-0.5 font-mono text-[11px] font-medium text-[oklch(0.2_0.01_260)]">
-                {m['studio.credits_cost']({ credits: cost })}
+                {plan === 'free'
+                  ? m['studio.free.badge']()
+                  : m['studio.credits_cost']({ credits: cost })}
               </span>
             </button>
           </div>
+
+          {plan === 'free' && (
+            <p className="text-muted-foreground -mt-1 text-xs">
+              {quota?.signedIn
+                ? m['studio.free.note_user']()
+                : m['studio.free.note_anon']()}
+            </p>
+          )}
 
           <div className="mt-auto pt-4">
             <p className="text-muted-foreground mb-3 font-mono text-xs tracking-[0.12em] uppercase">
@@ -670,6 +721,35 @@ export function Studio() {
             </div>
           )}
         </div>
+
+        {result?.tier === 'free' && !busy && (
+          <div className="bg-accent mt-3 flex flex-col gap-3 rounded-lg px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm leading-snug">
+              <span className="font-semibold">
+                {m['studio.free.result_title']()}
+              </span>{' '}
+              <span className="text-foreground/75">
+                {m['studio.free.result_body']()}
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                track('image_free_upsell_click', {
+                  signedIn: quota?.signedIn ? 1 : 0,
+                });
+                // Signed out: the next free image comes with an account.
+                if (!session?.user) goSignIn();
+                else setPaywall(true);
+              }}
+              className="bg-primary text-primary-foreground inline-flex h-9 shrink-0 items-center justify-center rounded-md px-4 text-sm font-medium whitespace-nowrap hover:opacity-90"
+            >
+              {session?.user
+                ? m['studio.free.upgrade_cta']()
+                : m['studio.free.signin_more_cta']()}
+            </button>
+          </div>
+        )}
 
         {!result && !busy && (
           <p className="text-muted-foreground mt-3 flex items-center gap-2 px-1 text-xs">

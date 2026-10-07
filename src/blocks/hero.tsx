@@ -19,6 +19,7 @@ const PRINTS = [
 ];
 
 export function Hero() {
+  const start = m['landing.hero.headline_start']();
   const end = m['landing.hero.headline_end']();
   return (
     <section id="create" className="scroll-mt-20 px-4 pt-12 pb-20 sm:pt-16">
@@ -30,7 +31,7 @@ export function Hero() {
             </p>
             <h1 className="font-display text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[4.25rem]">
               {/* One text node, so the SSR H1 has no <!-- --> separator. */}
-              {`${m['landing.hero.headline_start']()} `}
+              {start ? `${start} ` : null}
               <span className="marker whitespace-nowrap">
                 {m['landing.hero.headline_accent']()}
               </span>

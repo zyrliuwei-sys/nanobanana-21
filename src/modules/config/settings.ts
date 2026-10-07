@@ -961,6 +961,23 @@ export function getSettings(): Setting[] {
       tab: 'ai',
     },
     {
+      name: 'free_image_model',
+      title: 'Free trial model ID',
+      type: 'text',
+      placeholder: 'gemini-3.1-flash-lite-image (default, $0.029/image)',
+      tip: 'Cheap Nano Banana 2 Lite model for the 2 free trial images (1 signed out + 1 after sign-in). nano-banana-2-lite-beta costs $0.018 but often fails for lack of capacity. Paid generations always use the model above.',
+      group: 'nano_banana',
+      tab: 'ai',
+    },
+    {
+      name: 'free_trial_daily_cap',
+      title: 'Free trial images per day (site-wide)',
+      type: 'number',
+      placeholder: '300 (default; 0 = turn free trials off)',
+      group: 'nano_banana',
+      tab: 'ai',
+    },
+    {
       name: 'prompt_screening_enabled',
       title: 'Prompt screening (Waffo)',
       type: 'switch',
