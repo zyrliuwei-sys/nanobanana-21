@@ -7,6 +7,7 @@ import { BLOG_POST_SLUGS, loadLocalPost } from '@/content/posts';
 const STATIC_PATHS = [
   '',
   '/pricing',
+  '/halloween-emoji',
   '/blog',
   '/privacy-policy',
   '/terms-of-service',
@@ -60,8 +61,19 @@ export const Route = createFileRoute('/sitemap.xml')({
       GET: async () => {
         const entries: Entry[] = STATIC_PATHS.map((path) => ({
           path,
-          changeFrequency: path === '/blog' ? 'weekly' : 'monthly',
-          priority: path === '' ? 1 : path === '/pricing' ? 0.9 : 0.6,
+          // Seasonal campaign page: refresh weekly while it matters.
+          changeFrequency:
+            path === '/blog' || path === '/halloween-emoji'
+              ? 'weekly'
+              : 'monthly',
+          priority:
+            path === ''
+              ? 1
+              : path === '/pricing'
+                ? 0.9
+                : path === '/halloween-emoji'
+                  ? 0.8
+                  : 0.6,
         }));
 
         // Local MDX articles (bundled, every locale) + published database
