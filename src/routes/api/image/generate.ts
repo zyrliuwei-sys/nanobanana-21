@@ -114,16 +114,11 @@ async function POST({ request }: { request: Request }) {
     }
 
     if (!canPay) {
-      // Free trial (Nano Banana 2 Lite, 1K): 1 signed out + 1 signed in.
+      // One free generation per person (see ./-free). Once it's used — or
+      // the trial is paused — every further image requires credits.
       const allowance = await freeAllowance(visitor, userId, configs);
       if ('blocked' in allowance) {
-        if (allowance.blocked === 'PAUSED') {
-          return reply(respErr(userId ? INSUFFICIENT_CREDITS : 'FREE_PAUSED'));
-        }
-        // Used up: signed-out visitors get one more after signing in.
-        return reply(
-          respErr(userId ? INSUFFICIENT_CREDITS : 'FREE_USED_SIGN_IN')
-        );
+        return reply(respErr(INSUFFICIENT_CREDITS));
       }
       try {
         const view = await createFreeTask({

@@ -2,12 +2,15 @@
  * Free trial images: generated with the cheap Nano Banana 2 Lite route on
  * Evolink to let visitors try the product before paying.
  *
+ * One free generation per person (best effort):
  *   - signed out: 1 free image per device (cookie) and at most
  *     ANON_PER_IP_PER_DAY per IP
- *   - signed in:  1 more free image per account, at most USER_PER_IP_PER_DAY
- *     accounts' free images per IP (stops sign-up farming)
+ *   - signed in:  1 free image per account, but NOT if this device already
+ *     burned its anonymous trial (no "sign up for one more"), and at most
+ *     USER_PER_IP_PER_DAY accounts' free images per IP (stops sign-up farming)
  *   - a site-wide daily cap (admin `free_trial_daily_cap`) bounds the cost
  *
+ * Once the allowance is used, generation requires credits (see generate.ts).
  * Free generations never touch credits. They are stored in the `hotel_preview`
  * table (originally built for the same job: IP/device-tracked free previews),
  * so no schema migration is needed:
@@ -136,6 +139,16 @@ export async function freeAllowance(
       and(notFailed, eq(freeTrial.userId, userId))
     );
     if (usedByAccount > 0) return { blocked: 'USED' };
+    // One free per person: a device that already used its anonymous trial
+    // doesn't unlock another one by signing up.
+    const usedByDevice = await countRows(
+      and(
+        notFailed,
+        eq(freeTrial.deviceId, visitor.deviceId),
+        eq(freeTrial.quality, 'anon')
+      )
+    );
+    if (usedByDevice > 0) return { blocked: 'USED' };
     const usedOnIp = await countRows(
       and(
         notFailed,

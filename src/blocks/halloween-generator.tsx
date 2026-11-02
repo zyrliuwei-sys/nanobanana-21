@@ -3,8 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, ExternalLink, Loader2, Shuffle } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useSession } from '@/core/auth/client';
-import { useRouter } from '@/core/i18n/navigation';
 import {
   HALLOWEEN_BASE_PROMPT,
   HALLOWEEN_PRESETS,
@@ -34,13 +32,6 @@ type TaskView = {
   imageUrl: string | null;
   prompt?: string;
   aspectRatio: string | null;
-};
-
-type Quota = {
-  signedIn: boolean;
-  balance: number;
-  unlimited: boolean;
-  freeAvailable: boolean;
 };
 
 type Result = {
@@ -75,12 +66,11 @@ function errorText(message: string) {
 /**
  * The Halloween emoji generator — a focused front end for the same
  * /api/image/generate + /api/image/task pipeline the homepage studio uses
- * (free trial, credits, paywall and download included).
+ * (one trial generation for new users, then credits; paywall and download
+ * included).
  */
 export function HalloweenGenerator() {
-  const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: session } = useSession();
 
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
@@ -93,11 +83,6 @@ export function HalloweenGenerator() {
   const promptInput = useRef<HTMLTextAreaElement>(null);
   const usedPreset = useRef('');
 
-  const { data: quota } = useQuery({
-    queryKey: ['image-quota', session?.user?.id ?? 'anon'],
-    queryFn: () => apiGet<Quota>('/api/image/quota'),
-    staleTime: 30_000,
-  });
   const { data: priceData } = useQuery({
     queryKey: ['image-price'],
     queryFn: () =>
@@ -140,18 +125,12 @@ export function HalloweenGenerator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taskQuery.isError, taskId]);
 
-  function goSignIn() {
-    router.push(
-      `/sign-in?callbackUrl=${encodeURIComponent('/halloween-emoji')}`
-    );
-  }
-
   const generate = useMutation({
     mutationFn: () =>
       apiPost<TaskView>('/api/image/generate', {
         prompt: prompt.trim(),
         aspectRatio,
-        // Stickers don't need upsampling; the free tier is 1K anyway.
+        // Stickers don't need upsampling — 1K is plenty for emoji size.
         resolution: DEFAULT_RESOLUTION,
       }),
     onMutate: () => {
@@ -167,13 +146,6 @@ export function HalloweenGenerator() {
       if (e.message === 'Insufficient credits') {
         track('halloween_paywall');
         setPaywall(true);
-        return;
-      }
-      if (e.message === 'FREE_USED_SIGN_IN') {
-        track('halloween_free_signin_prompt');
-        toast(m['studio.free.signin_prompt'](), {
-          action: { label: m['studio.free.signin_cta'](), onClick: goSignIn },
-        });
         return;
       }
       toast.error(errorText(e.message));
@@ -201,12 +173,6 @@ export function HalloweenGenerator() {
       HALLOWEEN_PRESETS[Math.floor(Math.random() * HALLOWEEN_PRESETS.length)];
     applyPreset(pick.key, pick.prompt);
   }
-
-  // Free trial vs paid: the server decides; this only drives the button badge
-  // (same semantics as blocks/studio.tsx).
-  const canPay =
-    !!quota?.signedIn && (quota.unlimited || quota.balance >= cost);
-  const showFree = !canPay && (quota ? quota.freeAvailable !== false : true);
 
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_1fr]">
@@ -282,20 +248,10 @@ export function HalloweenGenerator() {
             {busy ? <Loader2 className="size-4 animate-spin" /> : null}
             {m['halloween.gen.generate']()}
             <span className="bg-banana rounded px-1.5 py-0.5 font-mono text-[11px] font-medium text-[oklch(0.2_0.01_260)]">
-              {showFree
-                ? m['studio.free.badge']()
-                : m['studio.credits_cost']({ credits: cost })}
+              {m['studio.credits_cost']({ credits: cost })}
             </span>
           </button>
         </div>
-
-        {showFree && (
-          <p className="text-muted-foreground mt-2 text-xs">
-            {quota?.signedIn
-              ? m['studio.free.note_user']()
-              : m['studio.free.note_anon']()}
-          </p>
-        )}
 
         <div className="mt-auto pt-5">
           <p className="text-muted-foreground mb-3 font-mono text-xs tracking-[0.12em] uppercase">
