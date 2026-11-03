@@ -4,6 +4,7 @@ import {
   resolveImageCredits,
   resolveReferenceCredits,
 } from '@/config/image-gen';
+import { resolveSeedreamCredits } from '@/config/seedream';
 import { getAllConfigs } from '@/modules/config/service';
 import { respData, respErr } from '@/lib/resp';
 
@@ -14,6 +15,7 @@ async function GET() {
     return respData({
       credits: resolveImageCredits(configs),
       referenceCredits: resolveReferenceCredits(configs),
+      seedreamCredits: resolveSeedreamCredits(configs),
     });
   } catch (error: any) {
     console.error('[image] price failed:', error);

@@ -8,6 +8,7 @@ const STATIC_PATHS = [
   '',
   '/pricing',
   '/halloween-emoji',
+  '/seedream-5-0',
   '/blog',
   '/privacy-policy',
   '/terms-of-service',
@@ -71,7 +72,7 @@ export const Route = createFileRoute('/sitemap.xml')({
               ? 1
               : path === '/pricing'
                 ? 0.9
-                : path === '/halloween-emoji'
+                : path === '/halloween-emoji' || path === '/seedream-5-0'
                   ? 0.8
                   : 0.6,
         }));

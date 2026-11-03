@@ -191,6 +191,13 @@ export function getSettingGroups(): SettingGroup[] {
         'Image generation & editing via Evolink (gemini-nano-banana-2.1). Uses the Evolink API key above. Credits default to 7x the Evolink price.',
       tab: 'ai',
     },
+    {
+      name: 'seedream',
+      title: 'Seedream 5.0',
+      description:
+        'Seedream 5.0 Lite text-to-image via the Evolink API key. Signed-in, credit-based generation at 2K.',
+      tab: 'ai',
+    },
 
     // Analytics
     {
@@ -985,6 +992,16 @@ export function getSettings(): Setting[] {
       group: 'nano_banana',
       tab: 'ai',
       defaultValue: 'true',
+    },
+
+    {
+      name: 'seedream_credits_2k',
+      title: 'Credits per Seedream 5.0 Lite image (2K)',
+      type: 'number',
+      placeholder: '25 (default)',
+      tip: 'Uses doubao-seedream-5.0-lite. Default price includes the site markup; failed tasks refund credits automatically.',
+      group: 'seedream',
+      tab: 'ai',
     },
 
     // ─── AI / Evolink ────────────────────────────────────────────────

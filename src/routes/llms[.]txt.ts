@@ -11,6 +11,12 @@ const STATIC_PAGES: { path: string; title: string; description: string }[] = [
       'Generate and edit images with Gemini Nano Banana 2.1: 4K text-to-image, up to 14 reference images, accurate text rendering',
   },
   {
+    path: '/seedream-5-0',
+    title: 'Seedream 5.0 AI Image Generator & Prompt Guide',
+    description:
+      'Seedream 5.0 Lite 2K text-to-image workspace, reusable prompts, Lite vs Pro guidance, and practical image creation tips. Requires account credits.',
+  },
+  {
     path: '/privacy-policy',
     title: 'Privacy Policy',
     description: 'Privacy information',

@@ -17,6 +17,13 @@ import {
   type ImageResolution,
 } from '@/config/image-gen';
 import {
+  isSeedreamRatio,
+  resolveSeedreamCredits,
+  SEEDREAM_ENGINE,
+  SEEDREAM_MODEL,
+  SEEDREAM_RESOLUTION,
+} from '@/config/seedream';
+import {
   AITaskStatus,
   createTask,
   mergeTaskInfo,
@@ -62,6 +69,27 @@ async function POST({ request }: { request: Request }) {
     visitor = await getVisitor(request);
 
     const body = await request.json().catch(() => null);
+    if (body?.engine !== undefined && body.engine !== SEEDREAM_ENGINE) {
+      return reply(respErr('Unsupported image engine'));
+    }
+    const isSeedream = body?.engine === SEEDREAM_ENGINE;
+    // Seedream always uses its own paid route. Never silently substitute
+    // the Nano Banana trial model on a Seedream request.
+    if (isSeedream && !userId) return reply(respErr('Unauthorized'));
+    if (
+      isSeedream &&
+      body?.aspectRatio !== undefined &&
+      !isSeedreamRatio(body.aspectRatio)
+    ) {
+      return reply(respErr('Unsupported aspect ratio'));
+    }
+    if (
+      isSeedream &&
+      body?.resolution !== undefined &&
+      body.resolution !== SEEDREAM_RESOLUTION
+    ) {
+      return reply(respErr('Unsupported resolution'));
+    }
     const prompt = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
     if (!prompt) return reply(respErr('Prompt is required'));
     if (prompt.length > MAX_PROMPT_LENGTH) {
@@ -70,9 +98,11 @@ async function POST({ request }: { request: Request }) {
     const aspectRatio: AspectRatio = isAspectRatio(body?.aspectRatio)
       ? body.aspectRatio
       : DEFAULT_ASPECT_RATIO;
-    const resolution: ImageResolution = isImageResolution(body?.resolution)
-      ? body.resolution
-      : DEFAULT_RESOLUTION;
+    const resolution: ImageResolution = isSeedream
+      ? SEEDREAM_RESOLUTION
+      : isImageResolution(body?.resolution)
+        ? body.resolution
+        : DEFAULT_RESOLUTION;
 
     const configs = await getAllConfigs();
     const references = await resolveReferenceUrls(body?.images, configs);
@@ -95,17 +125,20 @@ async function POST({ request }: { request: Request }) {
     const client = evolinkFromConfigs(configs);
     if (!client) return reply(respErr('Generation is not configured'));
 
-    // Paid path (Nano Banana 2.1): signed-in users with enough credits, and
-    // admins. Price = 7x Evolink cost (see config/image-gen.ts).
-    const price = imageCost(
-      resolveImageCredits(configs),
-      resolveReferenceCredits(configs),
-      resolution,
-      references.length
-    );
+    // Pricing and provider model are both chosen on the server.
+    const referenceCost = resolveReferenceCredits(configs) * references.length;
+    const price = isSeedream
+      ? resolveSeedreamCredits(configs) + referenceCost
+      : imageCost(
+          resolveImageCredits(configs),
+          resolveReferenceCredits(configs),
+          resolution,
+          references.length
+        );
     const isAdmin = userId ? await hasPermission(userId, 'admin.*') : false;
     const balance = userId ? await getBalance(userId) : 0;
     const canPay = !!userId && (isAdmin || balance >= price);
+    if (isSeedream && !canPay) return reply(respErr(INSUFFICIENT_CREDITS));
 
     // Has credits but not enough for this request: they're a paying user,
     // so offer a top-up rather than a downgraded free image.
@@ -137,7 +170,9 @@ async function POST({ request }: { request: Request }) {
       }
     }
 
-    const model = configs.nano_banana_model || DEFAULT_IMAGE_MODEL;
+    const model = isSeedream
+      ? SEEDREAM_MODEL
+      : configs.nano_banana_model || DEFAULT_IMAGE_MODEL;
     // Consumes the credits atomically; refunded if the task fails.
     const task = await createTask({
       userId: userId!,

@@ -4,6 +4,7 @@ import { SiteHeader } from '@/components/site-header';
 export function Header() {
   const navLinks = [
     { href: '/#create', label: m['landing.nav.create']() },
+    { href: '/seedream-5-0', label: m['landing.nav.seedream']() },
     { href: '/halloween-emoji', label: m['landing.nav.halloween']() },
     { href: '/#features', label: m['landing.nav.features']() },
     { href: '/#showcase', label: m['landing.nav.showcase']() },

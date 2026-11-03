@@ -34,8 +34,8 @@ export function SiteHeader({
   const user = session?.user;
 
   return (
-    <header className="bg-background/85 border-border sticky top-0 z-50 w-full border-b backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+    <header className="bg-background/85 border-border sticky top-0 z-50 w-full border-b px-4 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5">
           <img
@@ -51,7 +51,7 @@ export function SiteHeader({
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-4 lg:flex xl:gap-6">
           {navLinks?.map((link) =>
             isExternalHref(link.href) ? (
               <a
@@ -77,7 +77,7 @@ export function SiteHeader({
         </nav>
 
         {/* Desktop actions */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <ThemeToggle />
           {user ? (
             <SiteUserMenu
@@ -95,7 +95,7 @@ export function SiteHeader({
 
         {/* Mobile toggle */}
         <button
-          className="p-2 md:hidden"
+          className="p-2 lg:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
@@ -106,7 +106,7 @@ export function SiteHeader({
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-border border-t px-4 pt-2 pb-4 md:hidden">
+        <div className="border-border -mx-4 border-t px-4 pt-2 pb-4 lg:hidden">
           <nav className="flex flex-col gap-2">
             {navLinks?.map((link) =>
               isExternalHref(link.href) ? (

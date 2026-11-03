@@ -1,0 +1,18 @@
+[
+  {
+    "key": "landscape",
+    "prompt": "Use case: photorealistic-natural. Asset type: wide landscape image for a premium AI image creative workspace. Create one breathtaking cinematic landscape photograph, 16:9 horizontal composition. Monumental jagged Dolomite peaks rising above a broad emerald alpine lake, tiny contemporary pale stone pavilion near the far shoreline for immense scale, autumn larch trees, veils of low cloud catching first sunlight, soft warm light through mist, beautifully controlled contrast, natural teal water and pale gold mountain ridges. Landscape architectural editorial photography, rich spatial depth, extraordinary but believable, finely detailed natural textures, restrained colors, high end travel magazine quality. No text, no logos, no typography, no watermark, no split panels, no UI."
+  },
+  {
+    "key": "architecture",
+    "prompt": "Use case: photorealistic-natural. Asset type: architectural inspiration photograph for a premium creative tool. One grand cinematic architectural photograph, 16:9 horizontal. A monumental pale travertine art museum built into a remote Mediterranean cliff above the deep blue sea. Sweeping circular opening frames the ocean horizon, long sunlit colonnade, a single tiny visitor gives a sense of scale, still shallow reflecting pool, sculptural concrete, afternoon sun and carefully articulated dramatic shadows. Editorial architecture photography on medium format, refined modernism, atmospheric perspective, pristine composition, realistic materials. No text, no logos, no typography, no watermark, no collage, no UI."
+  },
+  {
+    "key": "portrait",
+    "prompt": "Use case: photorealistic-natural. Asset type: cinematic fashion editorial inspiration. One beautiful expansive 16:9 horizontal editorial photograph. An adult female fashion model in an elegant flowing ivory silk dress standing on the crest of vast rust-colored desert dunes. Strong wind makes the silk form a graceful sculptural curve. Full body figure relatively small in the landscape, expansive negative space, sculpted dune ridges extend into the distance, warm low evening light, natural detailed face and hands, bronze and cream palette, fine analogue film grain, prestige fashion campaign, calm and majestic. No text, no logos, no typography, no watermark, no collage, no UI."
+  },
+  {
+    "key": "product",
+    "prompt": "Use case: product-mockup. Asset type: luxury product campaign inspiration, cinematic 16:9 horizontal. An elegant transparent amber glass perfume bottle with an architectural square cap rests on a weathered limestone plinth in a vast sunlit sculptural sandstone courtyard. The bottle occupies about one fifth of the image, wide view showing immense softly curved stone walls and their beautiful long shadows. A narrow shaft of warm sunlight illuminates the glass, physically believable refraction, subtle amber reflections on the stone, no labels, premium niche perfume editorial photography, natural warm stone tones and honey gold, impeccable composition, sharp material texture and beautiful atmospheric depth. No text, no logos, no typography, no watermark, no collage, no UI."
+  }
+]

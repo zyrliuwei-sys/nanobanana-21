@@ -8,6 +8,7 @@ export function Footer() {
       title: m['landing.footer.product'](),
       links: [
         { label: m['landing.nav.create'](), href: '/#create' },
+        { label: m['landing.nav.seedream'](), href: '/seedream-5-0' },
         { label: m['landing.nav.features'](), href: '/#features' },
         { label: m['landing.nav.showcase'](), href: '/#showcase' },
         { label: m['landing.nav.pricing'](), href: '/pricing' },
@@ -19,7 +20,7 @@ export function Footer() {
         { label: m['landing.footer.blog'](), href: '/blog' },
         { label: m['landing.footer.faq'](), href: '/#faq' },
         {
-          label: 'support@nanobanana-21.com',
+          label: m['landing.footer.contact_support'](),
           href: 'mailto:support@nanobanana-21.com',
         },
       ],
