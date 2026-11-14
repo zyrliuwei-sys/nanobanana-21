@@ -1,43 +1,29 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { readFreeOriginal } from '@/server/free-image-files';
 
-import { getAuth } from '@/core/auth';
-import { findTask } from '@/modules/ai-tasks/service';
 import { respErr } from '@/lib/resp';
 
-import { findFreeTask, getVisitor, ownsFreeTask } from './-free';
+import { authorizeImageDownload, ImageDownloadError } from './-download-access';
 import { readLocalUpload } from './-shared';
 
 // Stream one of the user's generated images back as an attachment
 // (a cross-origin storage URL can't be force-downloaded from the browser).
 async function GET({ request }: { request: Request }) {
   try {
-    const auth = getAuth();
-    const session = await auth.api.getSession({ headers: request.headers });
-    const userId = session?.user?.id ?? null;
-
     const id = new URL(request.url).searchParams.get('id') || '';
+    const access = await authorizeImageDownload(request, id);
     let imageUrl = '';
-    const task = id && userId ? await findTask(id) : null;
-    if (task && task.userId === userId && !task.deletedAt) {
-      try {
-        imageUrl = JSON.parse((task.taskResult as string) || '{}').imageUrl;
-      } catch {
-        // fall through
-      }
-    } else if (id) {
-      // Free trial image: owned by the account or the device cookie.
-      const free = await findFreeTask(id);
-      if (free && ownsFreeTask(free, await getVisitor(request), userId)) {
-        imageUrl = free.sceneImageUrl ?? '';
-      }
-    }
-    if (!imageUrl) return respErr('Not found');
+    if (access.tier === 'paid') imageUrl = access.imageUrl;
 
     // Local dev fallback files are read from disk; storage URLs are absolute
     // https URLs written by the server itself.
     let body: BodyInit;
     let type: string;
-    if (imageUrl.startsWith('/')) {
+    if (access.tier === 'free') {
+      const original = await readFreeOriginal(access.stored, id);
+      body = new Uint8Array(original.body);
+      type = original.contentType;
+    } else if (imageUrl.startsWith('/')) {
       const local = await readLocalUpload(imageUrl);
       if (!local) return respErr('Not found');
       body = new Uint8Array(local.body);
@@ -53,10 +39,16 @@ async function GET({ request }: { request: Request }) {
       headers: {
         'content-type': type,
         'content-disposition': `attachment; filename="nanobanana-${id.slice(0, 8)}.${ext}"`,
-        'cache-control': 'private, max-age=3600',
+        'cache-control': 'private, no-store',
+        vary: 'Cookie',
       },
     });
   } catch (error: any) {
+    if (error instanceof ImageDownloadError)
+      return respErr(error.message, {
+        status: error.status,
+        headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' },
+      });
     console.error('[image] download failed:', error);
     return respErr('Download failed');
   }

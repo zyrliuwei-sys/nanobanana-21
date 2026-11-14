@@ -60,10 +60,12 @@ const ALL_PROVIDERS: PaymentProvider[] = [
 
 export function Pricing({
   title,
+  description,
   variant = 'section',
   headingLevel: Heading = 'h2',
 }: {
   title?: string;
+  description?: string;
   /** `h1` when the block is the page's main content (/pricing). */
   headingLevel?: 'h1' | 'h2';
   /** `dialog` drops the page-section chrome for use inside a modal. */
@@ -340,7 +342,7 @@ export function Pricing({
             {title ?? m['landing.pricing.title']()}
           </Heading>
           <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            {m['landing.pricing.description']()}
+            {description ?? m['landing.pricing.description']()}
           </p>
           <p className="text-muted-foreground mt-3 font-mono text-xs">
             {m['landing.pricing.per_image']({

@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Download,
   ExternalLink,
   ImagePlus,
   Loader2,
@@ -30,10 +29,17 @@ import {
 } from '@/config/image-gen';
 import { STUDIO_EXAMPLES, STUDIO_SAMPLE } from '@/config/showcase';
 import { apiGet, apiPost, apiUpload } from '@/lib/api-client';
+import {
+  LAST_STUDIO_PREVIEW,
+  PENDING_ORIGINAL_DOWNLOAD,
+  recalledImage,
+  rememberImage,
+} from '@/lib/image-download';
 import { webpSrcSet } from '@/lib/img';
 import { track } from '@/lib/track';
 import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
+import { ImageOriginalDownload } from '@/blocks/image-original-download';
 
 const PaywallDialog = lazy(() => import('@/blocks/paywall-dialog'));
 
@@ -180,7 +186,10 @@ export function Studio() {
   // Resume a generation that was running before a reload.
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem(TASK_KEY);
+      const saved =
+        sessionStorage.getItem(TASK_KEY) ||
+        recalledImage(PENDING_ORIGINAL_DOWNLOAD) ||
+        recalledImage(LAST_STUDIO_PREVIEW);
       if (saved) setTaskId(saved);
     } catch {
       // Storage unavailable.
@@ -216,6 +225,7 @@ export function Studio() {
     queryClient.invalidateQueries({ queryKey: ['image-history'] });
     queryClient.invalidateQueries({ queryKey: ['image-quota'] });
     if (task.status === 'success' && task.imageUrl) {
+      rememberImage(LAST_STUDIO_PREVIEW, task.tier === 'free' ? task.id : null);
       setResult({
         id: task.id,
         imageUrl: task.imageUrl,
@@ -657,33 +667,39 @@ export function Studio() {
             {result ? m['studio.output']() : m['studio.output_example']()}
           </span>
           {result && (
-            <div className="flex gap-1.5">
-              <a
-                href={`/api/image/download?id=${result.id}`}
-                aria-label={m['studio.download']()}
-                title={m['studio.download']()}
-                className="border-border hover:bg-accent rounded-md border p-2"
-              >
-                <Download className="size-4" />
-              </a>
+            <div className="flex flex-wrap gap-1.5">
+              <ImageOriginalDownload
+                id={result.id}
+                trial={result.tier === 'free'}
+              />
               <a
                 href={result.imageUrl}
                 target="_blank"
                 rel="noreferrer"
-                aria-label={m['studio.open']()}
-                title={m['studio.open']()}
+                aria-label={
+                  result.tier === 'free'
+                    ? m['studio.original.open_preview']()
+                    : m['studio.open']()
+                }
+                title={
+                  result.tier === 'free'
+                    ? m['studio.original.open_preview']()
+                    : m['studio.open']()
+                }
                 className="border-border hover:bg-accent rounded-md border p-2"
               >
                 <ExternalLink className="size-4" />
               </a>
-              <button
-                type="button"
-                onClick={editResult}
-                className="border-border hover:bg-accent inline-flex items-center gap-1.5 rounded-md border px-3 text-sm"
-              >
-                <Pencil className="size-3.5" />
-                {m['studio.edit_this']()}
-              </button>
+              {result.tier !== 'free' && (
+                <button
+                  type="button"
+                  onClick={editResult}
+                  className="border-border hover:bg-accent inline-flex items-center gap-1.5 rounded-md border px-3 text-sm"
+                >
+                  <Pencil className="size-3.5" />
+                  {m['studio.edit_this']()}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -732,22 +748,6 @@ export function Studio() {
                 {m['studio.free.result_body']()}
               </span>
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                track('image_free_upsell_click', {
-                  signedIn: quota?.signedIn ? 1 : 0,
-                });
-                // Signed out: the next free image comes with an account.
-                if (!session?.user) goSignIn();
-                else setPaywall(true);
-              }}
-              className="bg-primary text-primary-foreground inline-flex h-9 shrink-0 items-center justify-center rounded-md px-4 text-sm font-medium whitespace-nowrap hover:opacity-90"
-            >
-              {session?.user
-                ? m['studio.free.upgrade_cta']()
-                : m['studio.free.signin_more_cta']()}
-            </button>
           </div>
         )}
 

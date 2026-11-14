@@ -7,14 +7,25 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 export default function PaywallDialog({
   open,
   onOpenChange,
+  title,
+  description,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  title?: string;
+  description?: string;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-6 sm:max-w-5xl">
-        <Pricing variant="dialog" title={m['studio.paywall_title']()} />
+      <DialogContent
+        aria-label={title || m['studio.paywall_title']()}
+        className="max-h-[90vh] overflow-y-auto p-6 sm:max-w-5xl"
+      >
+        <Pricing
+          variant="dialog"
+          title={title || m['studio.paywall_title']()}
+          description={description}
+        />
       </DialogContent>
     </Dialog>
   );

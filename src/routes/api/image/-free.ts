@@ -16,15 +16,15 @@
  * so no schema migration is needed:
  *   quality -> tier ('anon' | 'user'), size -> aspect ratio,
  *   request_id -> Evolink task id, task_id -> model used,
- *   scene_image_url -> result URL.
+ *   scene_image_url -> encrypted original + compressed preview metadata.
  */
+import { persistFreeImage } from '@/server/free-image-files';
 import { and, count, eq, gte, isNotNull, ne } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { hotelPreview as freeTrial } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 
-import { uploadGeneratedImage } from './-shared';
 import { evolinkFromConfigs } from './-task';
 
 /** Official Lite route: $0.029/image, reliable (~10s). */
@@ -197,7 +197,10 @@ export function freeView(row: FreeRow, progress = 0): FreeTaskView {
     tier: 'free',
     status,
     progress: status === 'success' ? 100 : progress,
-    imageUrl: row.sceneImageUrl ?? null,
+    imageUrl:
+      status === 'success' && row.sceneImageUrl
+        ? `/api/image/preview?id=${encodeURIComponent(row.id)}`
+        : null,
     aspectRatio: row.size,
     resolution: '1K',
     costCredits: 0,
@@ -277,9 +280,7 @@ export function ownsFreeTask(
   visitor: Visitor,
   userId: string | null
 ) {
-  return (
-    (!!userId && row.userId === userId) || row.deviceId === visitor.deviceId
-  );
+  return row.userId ? row.userId === userId : row.deviceId === visitor.deviceId;
 }
 
 async function setFree(id: string, patch: Partial<FreeRow>) {
@@ -329,26 +330,18 @@ export async function syncFreeTask(
       .returning({ id: freeTrial.id });
     if (!claimed.length)
       return freeView((await findFreeTask(row.id)) ?? row, 95);
-    let imageUrl = remote.results[0];
     try {
-      const resp = await fetch(imageUrl, {
-        signal: AbortSignal.timeout(60_000),
-      });
-      const contentType = resp.headers.get('content-type') || 'image/png';
-      const ext = contentType.split('/')[1]?.split(';')[0] || 'png';
-      ({ url: imageUrl } = await uploadGeneratedImage({
-        body: new Uint8Array(await resp.arrayBuffer()),
-        key: `nano-banana-free/${getUuid()}.${ext}`,
-        contentType,
-      }));
+      const stored = await persistFreeImage(row.id, remote.results[0]);
+      await setFree(row.id, { status: 'success', sceneImageUrl: stored });
+      return freeView({ ...row, status: 'success', sceneImageUrl: stored });
     } catch (error) {
-      console.error(
-        '[image] free persist failed, keeping provider URL:',
-        error
-      );
+      console.error('[image] free preview persistence failed:', error);
+      await setFree(row.id, {
+        status: 'failed',
+        error: 'Unable to prepare preview',
+      });
+      return freeView({ ...row, status: 'failed' });
     }
-    await setFree(row.id, { status: 'success', sceneImageUrl: imageUrl });
-    return freeView({ ...row, status: 'success', sceneImageUrl: imageUrl });
   }
 
   return freeView(row, Math.min(remote.progress, 90));

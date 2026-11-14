@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, ExternalLink, Loader2, Shuffle } from 'lucide-react';
+import { ExternalLink, Loader2, Shuffle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -15,9 +15,16 @@ import {
   type ImageResolution,
 } from '@/config/image-gen';
 import { apiGet, apiPost } from '@/lib/api-client';
+import {
+  LAST_HALLOWEEN_PREVIEW,
+  PENDING_ORIGINAL_DOWNLOAD,
+  recalledImage,
+  rememberImage,
+} from '@/lib/image-download';
 import { track } from '@/lib/track';
 import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
+import { ImageOriginalDownload } from '@/blocks/image-original-download';
 
 const PaywallDialog = lazy(() => import('@/blocks/paywall-dialog'));
 
@@ -38,6 +45,7 @@ type Result = {
   id: string;
   imageUrl: string;
   prompt: string;
+  tier: 'free' | 'paid';
 };
 
 const POLL_MS = 2500;
@@ -83,6 +91,13 @@ export function HalloweenGenerator() {
   const promptInput = useRef<HTMLTextAreaElement>(null);
   const usedPreset = useRef('');
 
+  useEffect(() => {
+    const saved =
+      recalledImage(PENDING_ORIGINAL_DOWNLOAD) ||
+      recalledImage(LAST_HALLOWEEN_PREVIEW);
+    if (saved) setTaskId(saved);
+  }, []);
+
   const { data: priceData } = useQuery({
     queryKey: ['image-price'],
     queryFn: () =>
@@ -108,10 +123,15 @@ export function HalloweenGenerator() {
     queryClient.invalidateQueries({ queryKey: ['user-credits'] });
     queryClient.invalidateQueries({ queryKey: ['image-quota'] });
     if (task.status === 'success' && task.imageUrl) {
+      rememberImage(
+        LAST_HALLOWEEN_PREVIEW,
+        task.tier === 'free' ? task.id : null
+      );
       setResult({
         id: task.id,
         imageUrl: task.imageUrl,
         prompt: task.prompt || '',
+        tier: task.tier === 'free' ? 'free' : 'paid',
       });
       track('halloween_generate_success', { preset: usedPreset.current });
     } else {
@@ -300,21 +320,25 @@ export function HalloweenGenerator() {
               : m['halloween.gen.output_example']()}
           </span>
           {result && (
-            <div className="flex gap-1.5">
-              <a
-                href={`/api/image/download?id=${result.id}`}
-                aria-label={m['studio.download']()}
-                title={m['studio.download']()}
-                className="border-border hover:bg-accent rounded-md border p-2"
-              >
-                <Download className="size-4" />
-              </a>
+            <div className="flex flex-wrap gap-1.5">
+              <ImageOriginalDownload
+                id={result.id}
+                trial={result.tier === 'free'}
+              />
               <a
                 href={result.imageUrl}
                 target="_blank"
                 rel="noreferrer"
-                aria-label={m['studio.open']()}
-                title={m['studio.open']()}
+                aria-label={
+                  result.tier === 'free'
+                    ? m['studio.original.open_preview']()
+                    : m['studio.open']()
+                }
+                title={
+                  result.tier === 'free'
+                    ? m['studio.original.open_preview']()
+                    : m['studio.open']()
+                }
                 className="border-border hover:bg-accent rounded-md border p-2"
               >
                 <ExternalLink className="size-4" />
