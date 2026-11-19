@@ -105,6 +105,9 @@ export default defineConfig({
     tsconfigPaths: true,
     alias: isCloudflareBuild
       ? {
+          // Photon supplies its own wasm-bindgen imports. Preserve the compiled
+          // module instead of letting Nitro instantiate it with empty imports.
+          './lib/photon_rs_bg.wasm': `${fileURLToPath(import.meta.resolve('@cf-wasm/photon/photon.wasm'))}?module`,
           mysql2: driverStub,
           ...(keepPostgres ? {} : { postgres: driverStub }),
         }
